@@ -173,7 +173,7 @@ std::vector<Move> VersusGame::get_N_moves(int id, int N) const
 {
 	const Game& player = id == 0 ? p1_game : p2_game;
 	std::vector<Piece> valid_pieces = player.movegen(player.current_piece.type);
-	PieceType holdType = player.hold.has_value() ? player.hold->type : player.queue.front();
+	PieceType holdType = player.hold.has_value() ? player.hold.value() : player.queue.front();
 
 	std::vector<Piece> hold_pieces = player.movegen(holdType);
 	valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
@@ -200,16 +200,16 @@ std::vector<Move> VersusGame::get_N_moves(int id, int N) const
 	out.reserve(N);
 
 	// make sure not to sample the same move twice
-	RNG rng;
+	RNG rng_1;
 
 	std::set<int> sampled_indices;
 
 	for (int i = 0; i < N; i++)
 	{
-		int index = rng.getRand(moves.size());
+		int index = rng_1.getRand(moves.size());
 		while (sampled_indices.find(index) != sampled_indices.end())
 		{
-			index = rng.getRand(moves.size());
+			index = rng_1.getRand(moves.size());
 		}
 
 		sampled_indices.insert(index);

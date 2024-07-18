@@ -20,11 +20,12 @@ void Game::place_piece() {
 void Game::do_hold() {
 
     if (hold) {
-        std::swap(hold.value(), current_piece);
-        current_piece = Piece(current_piece.type);
+        PieceType current_piece_type = hold.value();
+        hold = current_piece.type;
+        current_piece = current_piece_type;
     }
     else {
-        hold = current_piece;
+        hold = current_piece.type;
 
         // shift queue
         current_piece = queue.front();
@@ -46,7 +47,7 @@ bool Game::place_piece(Piece& piece) {
 
             first_hold = true;
         }
-        hold = current_piece;
+        hold = current_piece.type;
     }
 
     current_piece = piece;
@@ -456,7 +457,7 @@ std::vector<Piece> Game::get_possible_piece_placements() const {
 
     std::vector<Piece> valid_pieces = movegen(current_piece.type);
 
-    PieceType holdType = hold.has_value() ? hold->type : queue.front();
+    PieceType holdType = hold.has_value() ? hold.value() : queue.front();
     if (holdType != PieceType::Empty) {
         std::vector<Piece> hold_pieces = movegen(holdType);
         valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());

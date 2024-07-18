@@ -8,7 +8,7 @@ typedef uint16_t u16;  ///<  16-bit unsigned integer.
 typedef uint32_t u32;  ///<  32-bit unsigned integer.
 typedef uint64_t u64;  ///<  64-bit unsigned integer.
 
-enum class spinType {
+enum class spinType : u8 {
     null,
     mini,
     normal,

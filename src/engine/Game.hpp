@@ -90,19 +90,16 @@ class Game {
 
     Board board;
     Piece current_piece;
-    std::optional<Piece> hold;
-    int garbage_meter = 0;
-    int b2b = 0;
-    int combo = 0;
-
-    float app = 0;
-
+    std::optional<PieceType> hold;
+    u8 garbage_meter = 0;
+    u16 b2b = 0;
+    u16 combo = 0;
     // tetrio stuff
-    int currentcombopower = 0;
-    int currentbtbchainpower = 0;
+    u16 currentcombopower = 0;
+    u16 currentbtbchainpower = 0;
 
     const struct options {
-        int garbagemultiplier = 1;
+        u8 garbagemultiplier = 1;
         bool b2bchaining = true;
     } options;
     std::array<PieceType, QUEUE_SIZE> queue;

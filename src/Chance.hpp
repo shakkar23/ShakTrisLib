@@ -16,19 +16,18 @@ class Chance {
     Chance(int column1, int column2, Chance& c_move) {
         p1_garbage_column = column1;
         p2_garbage_column = column2;
-        rng = c_move.rng;
+        rng_1 = c_move.rng_1;
         rng_2 = c_move.rng_2;
     }
 
-    int p1_garbage_column;
-    int p2_garbage_column;
-
     int garbage_amount;
-
     int time = 0;
 
-    RNG rng;
+    RNG rng_1;
     RNG rng_2;
+    
+    u8 p1_garbage_column;
+    u8 p2_garbage_column;
 
     PieceType p1_next_piece;
     PieceType p2_next_piece;
@@ -37,19 +36,19 @@ class Chance {
     PieceType p2_extra_piece;
 
     int get_garbage_column() {
-        return rng.getRand(Board::width);
+        return rng_1.getRand(Board::width);
     }
 
     void reset_rng() {
-        rng.new_seed();
+        rng_1.new_seed();
     }
 
     void new_move(bool p1_first_hold, bool p2_first_hold) {
-        p1_next_piece = rng.getPiece();
+        p1_next_piece = rng_1.getPiece();
         p2_next_piece = rng_2.getPiece();
         if(p1_first_hold) {
 			p1_extra_piece = p1_next_piece;
-			p1_next_piece = rng.getPiece();
+			p1_next_piece = rng_1.getPiece();
 		}
 
         if(p2_first_hold) {
@@ -59,8 +58,9 @@ class Chance {
 
         time++;
 
-        p1_garbage_column = rng.getRand(Board::width);
-        p2_garbage_column = rng.getRand(Board::width);
+        p1_garbage_column = rng_1.getRand(Board::width);
+        p2_garbage_column = rng_1.getRand(Board::width);
+
         garbage_amount = 0;
         if (time % 10 == 0) {
             garbage_amount = 10;
