@@ -4,8 +4,6 @@
 
 set(SHAKTRIS_SOURCES
 		"engine/Game.cpp"
-		"util/Distribution.cpp"
-		"util/fasthash.cpp"
 		"util/rng.cpp"
 
 	"Move.cpp"
@@ -18,12 +16,8 @@ set( SHAKTRIS_HEADERS
 		"engine/Game.hpp"
 		"engine/Piece.hpp"
 		"engine/TetrisConstants.hpp"
-		"util/Distribution.hpp"
-		"util/fasthash.h"
-		"util/MPSC.hpp"
 		"util/pext.hpp"
 		"util/rng.hpp"
-		"util/SPSC.hpp"
 	"Chance.hpp"
 	"Move.hpp"
 	"VersusGame.hpp"
