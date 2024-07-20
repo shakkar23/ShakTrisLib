@@ -4,6 +4,7 @@
 #include <cstdint>
 
 typedef uint8_t u8;    ///<   8-bit unsigned integer.
+typedef int8_t i8;     ///<   8-bit signed integer.
 typedef uint16_t u16;  ///<  16-bit unsigned integer.
 typedef uint32_t u32;  ///<  32-bit unsigned integer.
 typedef uint64_t u64;  ///<  64-bit unsigned integer.
@@ -14,8 +15,8 @@ enum class spinType : u8 {
     normal,
 };
 struct Coord {
-    u8 x;
-    u8 y;
+    i8 x;
+    i8 y;
 };
 
 enum RotationDirection : u8 {
