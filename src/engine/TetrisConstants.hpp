@@ -14,11 +14,11 @@ enum class spinType : u8 {
     normal,
 };
 struct Coord {
-    int_fast8_t x;
-    int_fast8_t y;
+    u8 x;
+    u8 y;
 };
 
-enum RotationDirection : uint_fast8_t {
+enum RotationDirection : u8 {
     North,
     East,
     South,
@@ -26,7 +26,7 @@ enum RotationDirection : uint_fast8_t {
     RotationDirections_N
 };
 
-enum ColorType : uint_fast8_t {
+enum ColorType : u8 {
 
     // Color for pieces
     S,
@@ -43,7 +43,7 @@ enum ColorType : uint_fast8_t {
     ColorTypes_N
 };
 
-enum class PieceType : uint_fast8_t {
+enum class PieceType : u8 {
     // actual pieces
     S = ColorType::S,
     Z = ColorType::Z,
@@ -56,12 +56,12 @@ enum class PieceType : uint_fast8_t {
     PieceTypes_N
 };
 
-enum TurnDirection : uint_fast8_t {
+enum TurnDirection : u8 {
     Left,
     Right,
 };
 
-enum class Movement : uint_fast8_t {
+enum class Movement : u8 {
     Left,
     Right,
     RotateClockwise,

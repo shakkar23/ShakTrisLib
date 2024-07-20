@@ -68,7 +68,7 @@ public:
     }
 
     constexpr inline uint32_t compact_hash() const {
-        return rotation + position.x * n_minos + position.y * 10 * n_minos + (int)type * 10 * 20 * n_minos;
+        return uint32_t(rotation) + uint32_t(position.x) * n_minos + uint32_t(position.y) * 10 * n_minos + uint32_t(type) * 10 * 20 * n_minos;
     }
 
     std::array<Coord, n_minos> minos;
