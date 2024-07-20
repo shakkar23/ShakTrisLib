@@ -36,7 +36,7 @@ void Game::do_hold() {
     }
 }
 
-bool Game::place_piece(Piece& piece) {
+bool Game::place_piece(const Piece& piece) {
     bool first_hold = false;
     if (piece.type != current_piece.type) {
         if (!hold.has_value())
