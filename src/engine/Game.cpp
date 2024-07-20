@@ -270,7 +270,7 @@ int Game::damage_sent(int linesCleared, spinType spinType, bool pc) {
 
     const int finalGarbage = garbage * options.garbagemultiplier;
     if (combo > 2) {
-        currentcombopower = std::max(currentcombopower, finalGarbage);
+        currentcombopower = std::max((int)currentcombopower, finalGarbage);
     }
 
     const auto combinedGarbage = finalGarbage + (pc ? GarbageValues::ALL_CLEAR : 0);

@@ -148,7 +148,7 @@ std::vector<Move> VersusGame::get_moves(int id) const
 
 	auto movegen_pieces = player.movegen(player.current_piece.type);
 
-	PieceType hold = player.hold.has_value() ? player.hold.value().type : player.queue.front();
+	PieceType hold = player.hold.has_value() ? player.hold.value() : player.queue.front();
 
 	std::vector<Piece> hold_pieces;
 	if (hold != PieceType::Empty)
