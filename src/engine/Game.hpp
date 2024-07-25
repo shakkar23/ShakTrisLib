@@ -10,6 +10,8 @@
 #include "Piece.hpp"
 #include "TetrisConstants.hpp"
 
+#include "ShaktrisConstants.hpp"
+
 enum damage_type { classic_guideline,
                    modern_guideline };
 namespace GarbageValues {

@@ -7,6 +7,188 @@
 #include <random>
 #include <tuple>
 
+
+
+/// <summary>
+/// this function returns the size of the zero_g_starts
+/// </summary>
+/// <returns>size_t for the zero_g_starts of any given piece</returns>
+consteval static size_t zero_g_starts_size(const PieceType p) {
+    Piece initial_piece = Piece(p);
+
+    auto collides = [](const Piece& piece) {
+
+        for (auto& mino : piece.minos) {
+            int x_pos = mino.x + piece.position.x;
+            if (x_pos < 0 || x_pos >= Board::width)
+                return true;
+
+            int y_pos = mino.y + piece.position.y;
+            if (y_pos < 0 || y_pos >= Board::height)
+                return true;
+        }
+
+        return false;
+        };
+
+    auto shift = [&](Piece& piece, int dir) {
+        piece.position.x += dir;
+
+        if (collides(piece))
+            piece.position.x -= dir;
+        else
+            piece.spin = spinType::null;
+        };
+
+    std::vector<Piece> open_nodes;
+    open_nodes.reserve(150);
+    std::vector<Piece> next_nodes;
+    next_nodes.reserve(150);
+    std::vector<bool> visited = std::vector<bool>(6444);
+
+    std::vector<Piece> valid_moves;
+    valid_moves.reserve(150);
+
+    // rotations
+    for (int r = 0; r < RotationDirections_N; r++) {
+        open_nodes.emplace_back(initial_piece);
+        if (initial_piece.type != PieceType::O)
+            initial_piece.rotate(TurnDirection::Right);
+
+        // lateral movement
+        while (open_nodes.size() > 0) {
+            // expand edges
+            for (const auto& piece : open_nodes) {
+                auto h = piece.compact_hash();
+                if (visited[h])
+                    continue;
+                // mark node as visited
+                visited[h] = true;
+
+                valid_moves.push_back(piece);
+
+                Piece new_piece = piece;
+                shift(new_piece, -1);
+                next_nodes.emplace_back(new_piece);
+
+                new_piece = piece;
+                shift(new_piece, 1);
+                next_nodes.emplace_back(new_piece);
+            }
+            open_nodes = next_nodes;
+            next_nodes.clear();
+        }
+    }
+
+    return valid_moves.size();
+};
+
+
+
+// returns the zero g starts for the given piece
+template<PieceType p>
+consteval static auto zero_g_starts() {
+
+    constexpr std::array<size_t, static_cast<size_t>(PieceType::PieceTypes_N)> zero_g_start_size = {
+        zero_g_starts_size(PieceType::S),
+        zero_g_starts_size(PieceType::Z),
+        zero_g_starts_size(PieceType::J),
+        zero_g_starts_size(PieceType::L),
+        zero_g_starts_size(PieceType::T),
+        zero_g_starts_size(PieceType::O),
+        zero_g_starts_size(PieceType::I),
+    };
+
+    Piece initial_piece = Piece(p);
+
+    auto collides = [](const Piece& piece) {
+
+        for (auto& mino : piece.minos) {
+            int x_pos = mino.x + piece.position.x;
+            if (x_pos < 0 || x_pos >= Board::width)
+                return true;
+
+            int y_pos = mino.y + piece.position.y;
+            if (y_pos < 0 || y_pos >= Board::height)
+                return true;
+        }
+
+        return false;
+        };
+
+    auto shift = [&](Piece& piece, int dir) {
+        piece.position.x += dir;
+
+        if (collides(piece))
+            piece.position.x -= dir;
+        else
+            piece.spin = spinType::null;
+        };
+
+    std::vector<Piece> open_nodes;
+    open_nodes.reserve(150);
+    std::vector<Piece> next_nodes;
+    next_nodes.reserve(150);
+    std::vector<bool> visited = std::vector<bool>(6444);
+
+    std::vector<Piece> valid_moves;
+    valid_moves.reserve(150);
+
+    // rotations
+    for (int r = 0; r < 4; r++) {
+        open_nodes.emplace_back(initial_piece);
+        if (initial_piece.type != PieceType::O)
+            initial_piece.rotate(TurnDirection::Right);
+
+        // lateral movement
+        while (open_nodes.size() > 0) {
+            // expand edges
+            for (const auto& piece : open_nodes) {
+                auto h = piece.compact_hash();
+                if (visited[h])
+                    continue;
+                // mark node as visited
+                visited[h] = true;
+
+                valid_moves.push_back(piece);
+
+                Piece new_piece = piece;
+                shift(new_piece, -1);
+                next_nodes.emplace_back(new_piece);
+
+                new_piece = piece;
+                shift(new_piece, 1);
+                next_nodes.emplace_back(new_piece);
+            }
+            open_nodes = next_nodes;
+            next_nodes.clear();
+        }
+    }
+
+    // shoutouts to friedkeenan
+    // github link: https://github.com/friedkeenan/
+    auto zero_g_starts = [&]<std::size_t... Indices>(std::index_sequence<Indices...>) {
+        return std::array{
+            valid_moves[Indices]...
+        };
+    }(std::make_index_sequence<zero_g_start_size[(size_t)p]>{});
+
+    return zero_g_starts;
+}
+
+constexpr auto zero_g_starts_S = zero_g_starts<PieceType::S>();
+constexpr auto zero_g_starts_Z = zero_g_starts<PieceType::Z>();
+constexpr auto zero_g_starts_J = zero_g_starts<PieceType::J>();
+constexpr auto zero_g_starts_L = zero_g_starts<PieceType::L>();
+constexpr auto zero_g_starts_T = zero_g_starts<PieceType::T>();
+constexpr auto zero_g_starts_O = zero_g_starts<PieceType::O>();
+constexpr auto zero_g_starts_I = zero_g_starts<PieceType::I>();
+
+
+
+
+
+
 void Game::place_piece() {
     board.set(current_piece);
 
@@ -302,46 +484,37 @@ void Game::process_movement(Piece& piece, Movement movement) const {
 
 // Movegen for a convex board with free movement at the top.
 std::vector<Piece> Game::movegen_fast(PieceType piece_type) const {
-    Piece initial_piece = Piece(piece_type);
-
-    std::vector<Piece> open_nodes;
-    open_nodes.reserve(150);
-    std::vector<Piece> next_nodes;
-    next_nodes.reserve(150);
-    std::vector<bool> visited = std::vector<bool>(6444);
 
     std::vector<Piece> valid_moves;
-    valid_moves.reserve(150);
 
-    // rotations
-    for (int r = 0; r < 4; r++) {
-        open_nodes.emplace_back(initial_piece);
-
-        initial_piece.rotate(TurnDirection::Right);
-
-        // lateral movement
-        while (open_nodes.size() > 0) {
-            // expand edges
-            for (auto& piece : open_nodes) {
-                auto h = piece.compact_hash();
-                if (visited[h])
-                    continue;
-                // mark node as visited
-                visited[h] = true;
-
-                valid_moves.push_back(piece);
-
-                Piece new_piece = piece;
-                process_movement(new_piece, Movement::Left);
-                next_nodes.emplace_back(new_piece);
-
-                new_piece = piece;
-                process_movement(new_piece, Movement::Right);
-                next_nodes.emplace_back(new_piece);
-            }
-            open_nodes = next_nodes;
-            next_nodes.clear();
-        }
+    switch (piece_type) {
+    case PieceType::S:
+        valid_moves.assign(zero_g_starts_S.begin(), zero_g_starts_S.end());
+        break;
+    case PieceType::Z:
+        valid_moves.assign(zero_g_starts_Z.begin(), zero_g_starts_Z.end());
+        break;
+    case PieceType::J:
+        valid_moves.assign(zero_g_starts_J.begin(), zero_g_starts_J.end());
+        break;
+    case PieceType::L:
+        valid_moves.assign(zero_g_starts_L.begin(), zero_g_starts_L.end());
+        break;
+    case PieceType::T:
+        valid_moves.assign(zero_g_starts_T.begin(), zero_g_starts_T.end());
+        break;
+    case PieceType::O:
+        valid_moves.assign(zero_g_starts_O.begin(), zero_g_starts_O.end());
+        break;
+    case PieceType::I:
+        valid_moves.assign(zero_g_starts_I.begin(), zero_g_starts_I.end());
+        break;
+    //case PieceType::Empty:
+        //break;
+    //case PieceType::PieceTypes_N:
+        //break;
+    // default:
+        //break;
     }
 
     for (Piece &piece : valid_moves) {

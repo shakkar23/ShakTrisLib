@@ -9,6 +9,9 @@ typedef uint16_t u16;  ///<  16-bit unsigned integer.
 typedef uint32_t u32;  ///<  32-bit unsigned integer.
 typedef uint64_t u64;  ///<  64-bit unsigned integer.
 
+
+using column_t = u32;
+
 enum class spinType : u8 {
     null,
     mini,
@@ -108,8 +111,12 @@ constexpr std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N> p
         {{{-1, 0}, {0, 0}, {1, 0}, {2, 0}}},   // I
         {{{0, 0}, {0, 0}, {0, 0}, {0, 0}}}     // NULL
     }};
+/// from this point onwards we define things with constexpr functions
 
-
+/// <summary>
+/// generates the rotation piece definition for the piece to just have a lookup for every rotation state
+/// </summary>
+/// <returns>the rot_piece_def</returns>
 consteval auto generate_rot_piece_def() {
     std::array<std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def{};
 
@@ -136,3 +143,4 @@ consteval auto generate_rot_piece_def() {
 }
 
 constexpr std::array<std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def = generate_rot_piece_def();
+
