@@ -8,7 +8,7 @@
 #include "Board.hpp"
 #include "Move.hpp"
 #include "Piece.hpp"
-#include "TetrisConstants.hpp"
+//#include "BitPiece.hpp"
 
 #include "ShaktrisConstants.hpp"
 
