@@ -9,14 +9,14 @@ public:
     constexpr Piece(PieceType type) noexcept {
         this->type = type;
         rotation = RotationDirection::North;
-        position = { 10 / 2 - 1, 20 - 2 };
+        position = { 10 / 2 - 1, 19 };
         minos = piece_definitions[static_cast<size_t>(type)];
         spin = spinType::null;
     }
     constexpr Piece(PieceType type, RotationDirection dir) noexcept {
         this->type = type;
         rotation = dir;
-        position = { 10 / 2 - 1, 20 - 2 };
+        position = { 10 / 2 - 1, 19 };
         minos = rot_piece_def[static_cast<size_t>(dir)][static_cast<size_t>(type)];
         spin = spinType::null;
     }
