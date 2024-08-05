@@ -21,7 +21,9 @@ class VersusGame {
     Game p1_game;
     Game p2_game;
 
-    Chance c_move = Chance();
+    RNG p1_rng;
+    RNG p2_rng;
+
     Move p1_move = Move(Piece(PieceType::Empty), false);
     Move p2_move = Move(Piece(PieceType::Empty), false);
 

@@ -25,8 +25,9 @@ set( SHAKTRIS_HEADERS
 
 
 )
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-
+if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+endif()
 # Add source to this project's executable.
 add_library(ShakTris STATIC ${SHAKTRIS_SOURCES})
 
