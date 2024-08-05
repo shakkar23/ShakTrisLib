@@ -482,8 +482,60 @@ void Game::process_movement(Piece& piece, Movement movement) const {
     }
 }
 
-// Movegen for a convex board with free movement at the top.
+
+// movegen for if the board is convex
 std::vector<Piece> Game::movegen_fast(PieceType piece_type) const {
+    Piece initial_piece = Piece(piece_type);
+
+    std::vector<Piece> open_nodes;
+    open_nodes.reserve(150);
+    std::vector<Piece> next_nodes;
+    next_nodes.reserve(150);
+    std::vector<bool> visited = std::vector<bool>(6444);
+
+    std::vector<Piece> valid_moves;
+    valid_moves.reserve(150);
+
+    // rotations
+    for (int r = 0; r < 4; r++) {
+        open_nodes.emplace_back(initial_piece);
+
+        initial_piece.rotate(TurnDirection::Right);
+
+        // lateral movement
+        while (open_nodes.size() > 0) {
+            // expand edges
+            for (auto& piece : open_nodes) {
+                auto h = piece.compact_hash();
+                if (visited[h])
+                    continue;
+                // mark node as visited
+                visited[h] = true;
+
+                valid_moves.push_back(piece);
+
+                Piece new_piece = piece;
+                process_movement(new_piece, Movement::Left);
+                next_nodes.emplace_back(new_piece);
+
+                new_piece = piece;
+                process_movement(new_piece, Movement::Right);
+                next_nodes.emplace_back(new_piece);
+            }
+            open_nodes = next_nodes;
+            next_nodes.clear();
+        }
+    }
+
+    for (Piece& piece : valid_moves) {
+        process_movement(piece, Movement::SonicDrop);
+    }
+
+    return valid_moves;
+}
+
+// Movegen for a convex board with free movement at the top. (decided by board height of ???)
+std::vector<Piece> Game::movegen_faster(PieceType piece_type) const {
 
     std::vector<Piece> valid_moves;
 
@@ -558,11 +610,29 @@ int Game::get_garbage_height() const {
 }
 
 std::vector<Piece> Game::movegen(PieceType piece_type) const {
-    Piece initial_piece = Piece(piece_type);
+    {
+        auto is_low = [](const Board& board) {
+            constexpr auto p = Piece(PieceType::I);
 
-    if (is_convex()) {
-        return movegen_fast(piece_type);
+            constexpr uint32_t high_collider = ~((1 << p.position.y) - 1);
+
+            bool ret = true;
+
+            for (size_t x = 0; x < Board::width; x++) {
+                if (board.get_column(x) & high_collider)
+                    ret = false;
+            }
+            return ret;
+            };
+        bool convex = is_convex();
+        bool low = is_low(board);
+        if(convex && low){
+            return movegen_faster(piece_type);
+        } else if (convex) {
+            return movegen_fast(piece_type);
+        }
     }
+    Piece initial_piece = Piece(piece_type);
 
     std::vector<Piece> open_nodes;
     open_nodes.reserve(150);
