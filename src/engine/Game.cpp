@@ -280,10 +280,10 @@ void Game::rotate(Piece& piece, TurnDirection dir) const {
             if (piece.type == PieceType::T) {
                 constexpr std::array<std::array<Coord, 4>, 4> corners = {{
                     // a       b       c        d
-                    {{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}}},  // North
-                    {{{1, 1}, {1, -1}, {-1, -1}, {-1, 1}}},  // East
-                    {{{1, -1}, {-1, -1}, {-1, 1}, {1, 1}}},  // South
-                    {{{-1, -1}, {-1, 1}, {1, 1}, {1, -1}}},  // West
+                    {{{-1,  1}, { 1,  1}, { 1, -1}, {-1, -1}}},  // North
+                    {{{ 1,  1}, { 1, -1}, {-1, -1}, {-1,  1}}},  // East
+                    {{{ 1, -1}, {-1, -1}, {-1,  1}, { 1,  1}}},  // South
+                    {{{-1, -1}, {-1,  1}, { 1,  1}, { 1, -1}}},  // West
                 }};
 
                 bool filled[4] = {true, true, true, true};
