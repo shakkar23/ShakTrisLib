@@ -2,10 +2,10 @@
 #include <optional>
 #include <vector>
 
-#include "Chance.hpp"
 #include "engine/Game.hpp"
 #include "Move.hpp"
 #include "engine/Piece.hpp"
+#include "util/rng.hpp"
 
 class Tetris;
 

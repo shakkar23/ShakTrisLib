@@ -4,6 +4,7 @@
 #include <optional>
 #include <ranges>
 #include <vector>
+#include <variant>
 
 #include "Board.hpp"
 #include "Move.hpp"
@@ -12,30 +13,9 @@
 
 #include "ShaktrisConstants.hpp"
 
-enum damage_type { classic_guideline,
-                   modern_guideline };
-namespace GarbageValues {
-const int SINGLE = 0;
-const int DOUBLE = 1;
-const int TRIPLE = 2;
-const int QUAD = 4;
-const int TSPIN_MINI = 0;
-const int TSPIN = 0;
-const int TSPIN_MINI_SINGLE = 0;
-const int TSPIN_SINGLE = 2;
-const int TSPIN_MINI_DOUBLE = 1;
-const int TSPIN_DOUBLE = 4;
-const int TSPIN_TRIPLE = 6;
-const int TSPIN_QUAD = 10;
-const int BACKTOBACK_BONUS = 1;
-const float BACKTOBACK_BONUS_LOG = .8f;
-const int COMBO_MINIFIER = 1;
-const float COMBO_MINIFIER_LOG = 1.25;
-const float COMBO_BONUS = .25;
-const int ALL_CLEAR = 10;
-const std::array<std::array<int, 13>, 2> combotable = {{{0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 5},
-                                                        {0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4}}};
-}  // namespace GarbageValues
+#include "modes/TetrioS1.hpp"
+#include "modes/Botris.hpp"
+
 
 constexpr int QUEUE_SIZE = 6;
 
@@ -45,6 +25,7 @@ class Game {
         for (auto& p : queue) {
             p = PieceType::Empty;
         }
+        mode = Botris();
     }
     Game& operator=(const Game& other) {
         if (this != &other) {
@@ -55,6 +36,7 @@ class Game {
             garbage_meter = other.garbage_meter;
             b2b = other.b2b;
             combo = other.combo;
+            mode = other.mode;
         }
         return *this;
     }
@@ -96,13 +78,9 @@ class Game {
     u8 garbage_meter = 0;
     u16 b2b = 0;
     u16 combo = 0;
-    // tetrio stuff
-    u16 currentcombopower = 0;
-    u16 currentbtbchainpower = 0;
-
-    const struct options {
-        u8 garbagemultiplier = 1;
-        bool b2bchaining = true;
-    } options;
     std::array<PieceType, QUEUE_SIZE> queue;
+
+    // make a variant thats points callable
+    std::variant<TetrioS1, Botris> mode;
+
 };

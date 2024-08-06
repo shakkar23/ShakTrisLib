@@ -356,108 +356,22 @@ void Game::add_garbage(int lines, int location) {
     }
 }
 
+
+
+// helper type for the visitor #4
+template<class... Ts>
+struct overloaded : Ts... { using Ts::operator()...; };
+
 // ported from
 // https://github.com/emmachase/tetrio-combo
 int Game::damage_sent(int linesCleared, spinType spinType, bool pc) {
-    auto maintainsB2B = false;
-    if (linesCleared) {
-        combo++;
-        if (4 == linesCleared || spinType != spinType::null) {
-            maintainsB2B = true;
-        }
 
-        if (maintainsB2B) {
-            b2b++;
-        } else {
-            b2b = 0;
-        }
-    } else {
-        combo = 0;
-        currentcombopower = 0;
-    }
 
-    int garbage = 0;
-
-    switch (linesCleared) {
-        case 0:
-            if (spinType::mini == spinType) {
-                garbage = GarbageValues::TSPIN_MINI;
-            } else if (spinType::normal == spinType) {
-                garbage = GarbageValues::TSPIN;
-            }
-            break;
-        case 1:
-            if (spinType::mini == spinType) {
-                garbage = GarbageValues::TSPIN_MINI_SINGLE;
-            } else if (spinType::normal == spinType) {
-                garbage = GarbageValues::TSPIN_SINGLE;
-            } else {
-                garbage = GarbageValues::SINGLE;
-            }
-            break;
-
-        case 2:
-            if (spinType::mini == spinType) {
-                garbage = GarbageValues::TSPIN_MINI_DOUBLE;
-            } else if (spinType::normal == spinType) {
-                garbage = GarbageValues::TSPIN_DOUBLE;
-            } else {
-                garbage = GarbageValues::DOUBLE;
-            }
-            break;
-
-        case 3:
-            if (spinType != spinType::null) {
-                garbage = GarbageValues::TSPIN_TRIPLE;
-            } else {
-                garbage = GarbageValues::TRIPLE;
-            }
-            break;
-
-        case 4:
-            if (spinType != spinType::null) {
-                garbage = GarbageValues::TSPIN_QUAD;
-            } else {
-                garbage = GarbageValues::QUAD;
-            }
-            break;
-    }
-
-    if (linesCleared) {
-        if (b2b > 1) {
-            if (options.b2bchaining) {
-                const int b2bGarbage = GarbageValues::BACKTOBACK_BONUS *
-                                       (1 + std::log1p((b2b - 1) * GarbageValues::BACKTOBACK_BONUS_LOG) + (b2b - 1 <= 1 ? 0 : (1 + std::log1p((b2b - 1) * GarbageValues::BACKTOBACK_BONUS_LOG) - (int)std::log1p((b2b - 1) * GarbageValues::BACKTOBACK_BONUS_LOG)) / 3));
-
-                garbage += b2bGarbage;
-
-                if (b2bGarbage > currentbtbchainpower) {
-                    currentbtbchainpower = b2bGarbage;
-                }
-            } else {
-                garbage += GarbageValues::BACKTOBACK_BONUS;
-            }
-        } else {
-            currentbtbchainpower = 0;
-        }
-    }
-
-    if (combo > 1) {
-        garbage *= 1 + GarbageValues::COMBO_BONUS * (combo - 1);  // Fucking broken ass multiplier :)
-    }
-
-    if (combo > 2) {
-        garbage = std::max((int)std::log1p(GarbageValues::COMBO_MINIFIER * (combo - 1) * GarbageValues::COMBO_MINIFIER_LOG), garbage);
-    }
-
-    const int finalGarbage = garbage * options.garbagemultiplier;
-    if (combo > 2) {
-        currentcombopower = std::max((int)currentcombopower, finalGarbage);
-    }
-
-    const auto combinedGarbage = finalGarbage + (pc ? GarbageValues::ALL_CLEAR : 0);
-
-    return combinedGarbage;
+    return std::visit(overloaded{
+            //[](auto arg) { /*very bad if this gets ran*/ },
+            [&](TetrioS1& mode) { return mode.points(linesCleared,spinType, pc, combo, b2b); },
+            [&](Botris& mode) { return mode.points(linesCleared,spinType, pc, combo, b2b); }
+        }, mode);
 }
 
 void Game::process_movement(Piece& piece, Movement movement) const {
@@ -561,10 +475,10 @@ std::vector<Piece> Game::movegen_faster(PieceType piece_type) const {
     case PieceType::I:
         valid_moves.assign(zero_g_starts_I.begin(), zero_g_starts_I.end());
         break;
-    //case PieceType::Empty:
-        //break;
-    //case PieceType::PieceTypes_N:
-        //break;
+    case PieceType::Empty:
+        break;
+    case PieceType::PieceTypes_N:
+        break;
     // default:
         //break;
     }
