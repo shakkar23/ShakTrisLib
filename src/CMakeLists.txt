@@ -12,14 +12,17 @@ set(SHAKTRIS_SOURCES
 )
 
 set( SHAKTRIS_HEADERS
+		"engine/BitPiece.hpp"
 		"engine/Board.hpp"
 		"engine/Game.hpp"
+		"engine/MoveGen.hpp"
 		"engine/Piece.hpp"
-		#"engine/BitPiece.hpp"
 		"engine/ShaktrisConstants.hpp"
+		"engine/RotationSystems.hpp"
+		"engine/Utiity.hpp"
+
 		"util/pext.hpp"
 		"util/rng.hpp"
-	"Chance.hpp"
 	"Move.hpp"
 	"VersusGame.hpp"
 

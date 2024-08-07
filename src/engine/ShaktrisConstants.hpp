@@ -74,30 +74,7 @@ enum class Movement : u8 {
 };
 
 // number of kicks srs has, including for initial
-constexpr std::size_t srs_kicks = 5;
 constexpr std::size_t n_minos = 4;
-
-constexpr std::array<std::array<Coord, srs_kicks>, RotationDirections_N> piece_offsets_JLSTZ = {{
-    {{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}},
-    {{{0, 0}, {1, 0}, {1, -1}, {0, 2}, {1, 2}}},
-    {{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}},
-    {{{0, 0}, {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}}},
-}};
-
-constexpr std::array<std::array<Coord, srs_kicks>, RotationDirections_N> piece_offsets_O = {{
-    {{{0, 0}}},
-    {{{0, -1}}},
-    {{{-1, -1}}},
-    {{{-1, 0}}},
-}};
-
-constexpr std::array<std::array<Coord, srs_kicks>, RotationDirections_N> piece_offsets_I = {{
-
-    {{{0, 0}, {-1, 0}, {2, 0}, {-1, 0}, {2, 0}}},
-    {{{-1, 0}, {0, 0}, {0, 0}, {0, 1}, {0, -2}}},
-    {{{-1, 1}, {1, 1}, {-2, 1}, {1, 0}, {-2, 0}}},
-    {{{0, 1}, {0, 1}, {0, 1}, {0, -1}, {0, 2}}},
-}};
 
 constexpr std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N> piece_definitions = {
 

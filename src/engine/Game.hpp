@@ -62,14 +62,6 @@ class Game {
 
     void process_movement(Piece& piece, Movement movement) const;
 
-    int get_garbage_height() const;
-
-    bool is_convex() const;
-
-    std::vector<Piece> movegen(PieceType piece_type) const;
-    std::vector<Piece> movegen_fast(PieceType piece_type) const;
-    std::vector<Piece> movegen_faster(PieceType piece_type) const;
-
     std::vector<Piece> get_possible_piece_placements() const;
 
     Board board;
