@@ -95,19 +95,19 @@ int Game::damage_sent(int linesCleared, spinType spinType, bool pc) {
 void Game::process_movement(Piece& piece, Movement movement) const {
     switch (movement) {
         case Movement::Left:
-            shift(piece, -1);
+            Shaktris::Utility::shift(board, piece, -1);
             break;
         case Movement::Right:
-            shift(piece, 1);
+            Shaktris::Utility::shift(board, piece, 1);
             break;
         case Movement::RotateClockwise:
-            rotate(piece, TurnDirection::Right);
+            srs_rotate(board, piece, TurnDirection::Right);
             break;
         case Movement::RotateCounterClockwise:
-            rotate(piece, TurnDirection::Left);
+            srs_rotate(board, piece, TurnDirection::Left);
             break;
         case Movement::SonicDrop:
-            sonic_drop(board, piece);
+            Shaktris::Utility::sonic_drop(board, piece);
             break;
             // default:
             // std::unreachable();

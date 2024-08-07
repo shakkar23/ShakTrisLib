@@ -116,11 +116,11 @@ void VersusGame::play_moves() {
     p1_game.queue.back() = p1_rng.getPiece();
     p2_game.queue.back() = p2_rng.getPiece();
 
-    if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
+    if (Shaktris::Utility::collides(p1_game.board, p1_game.current_piece)) {
         game_over = true;
     }
 
-    if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
+    if (Shaktris::Utility::collides(p2_game.board, p2_game.current_piece)) {
         game_over = true;
     }
 }
@@ -210,11 +210,11 @@ std::vector<Move> VersusGame::get_N_moves(int id, int N) const {
 Outcomes VersusGame::get_winner() const {
     Outcomes out = Outcomes::NONE;
 
-    if (p1_game.collides(p1_game.board, p1_game.current_piece)) {
+    if (Shaktris::Utility::collides(p1_game.board, p1_game.current_piece)) {
         out = Outcomes::P2_WIN;
     }
 
-    if (p2_game.collides(p2_game.board, p2_game.current_piece)) {
+    if (Shaktris::Utility::collides(p2_game.board, p2_game.current_piece)) {
         if (out == Outcomes::P2_WIN) {
             out = Outcomes::DRAW;
         } else {
