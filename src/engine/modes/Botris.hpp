@@ -31,9 +31,8 @@ struct Botris {
 		}
 
 		if (linesCleared) {
-			if (spin == spinType::normal)
-				garbage += attack_table[linesCleared];
-			else if (spin == spinType::mini)
+			garbage += attack_table[linesCleared];
+			if(spin == spinType::normal)
 				garbage += all_spin_bonus[linesCleared];
 
 			// combo
