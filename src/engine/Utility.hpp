@@ -12,8 +12,7 @@ namespace Shaktris {
 
     namespace Utility {
 
-
-        inline bool collides(const Board& board, const Piece& piece) {
+        constexpr inline bool collides(const Board& board, const Piece& piece) {
             for (auto& mino : piece.minos) {
                 int x_pos = mino.x + piece.position.x;
                 if (x_pos < 0 || x_pos >= Board::width)
@@ -29,7 +28,7 @@ namespace Shaktris {
             return false;
         }
 
-        inline void shift(const Board& board, Piece& piece, int dir) {
+        constexpr inline void shift(const Board& board, Piece& piece, int dir) {
             piece.position.x += dir;
 
             if (collides(board, piece))
@@ -38,7 +37,7 @@ namespace Shaktris {
                 piece.spin = spinType::null;
         }
 
-        inline void sonic_drop(const Board board, Piece& piece) {
+        constexpr inline void sonic_drop(const Board board, Piece& piece) {
             int distance = sizeof(column_t) * CHAR_BIT;
             for (auto& mino : piece.minos) {
 
@@ -57,7 +56,7 @@ namespace Shaktris {
             piece.position.y -= distance;
         }
 
-        inline int get_garbage_height(const Board& board) {
+        constexpr inline int get_garbage_height(const Board& board) {
 
             int max_air = -1;
 

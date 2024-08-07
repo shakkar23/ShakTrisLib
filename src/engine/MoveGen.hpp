@@ -361,12 +361,6 @@ namespace Shaktris {
             valid_moves.reserve(100);
 
 
-            // mark open nodes as visited
-            {
-                for (auto& piece : open_nodes) {
-                    visited[piece.compact_hash()] = true;
-                }
-            }
 
             while (open_nodes.size() > 0) {
                 // expand edges
