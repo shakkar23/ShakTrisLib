@@ -48,14 +48,6 @@ class Game {
 
     void do_hold();
 
-    bool collides(const Board& board, const Piece& piece) const;
-
-    void rotate(Piece& piece, TurnDirection dir) const;
-
-    void shift(Piece& piece, int dir) const;
-
-    void sonic_drop(const Board board, Piece& piece) const;
-
     void add_garbage(int lines, int location);
 
     int damage_sent(int linesCleared, spinType spinType, bool pc);
