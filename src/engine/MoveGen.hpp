@@ -935,7 +935,8 @@ namespace Shaktris {
                         // shift left
                         if (piece.position.x > 0) {
                             const auto col = s_board.boards[piece.rot].board[piece.position.x - 1];
-                            next_nodes.push_back({ Coord(piece.position.x - 1, piece.position.y), piece.rot });
+                            if (!(col & (1 << piece.position.y)))
+                                next_nodes.push_back({ Coord(piece.position.x - 1, piece.position.y), piece.rot });
                         }
                         // shift right
                         if (piece.position.x < Board::width - 1) {
