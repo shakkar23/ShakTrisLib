@@ -699,7 +699,7 @@ namespace Shaktris {
                     for (int x = 0; x < Board::width; x++) {
                         auto col = moves.boards[b_index].board[x];
                         while (auto height = (sizeof(column_t) * CHAR_BIT) - std::countl_zero(col)) {
-                            ret.emplace_back(type, (RotationDirection)b_index, Coord(x, height));
+                            ret.emplace_back(type, (RotationDirection)b_index, Coord(x, height - 1));
 
                             col &= ~(1 << (height - 1)); // clear the bit
                         }
