@@ -846,6 +846,9 @@ namespace Shaktris {
             }
 
             inline std::vector<Piece> god_movegen(const Board& board, PieceType type) {
+                if (board.is_convex()) {
+                    return moves_to_vec(convex_movegen(board, type), type);
+                }
                 const SmearedBoard s_board = smear(board, type);
                 std::vector<SmearedPiece> open_nodes; open_nodes.reserve(200);
                 std::vector<SmearedPiece> next_nodes; next_nodes.reserve(200);
