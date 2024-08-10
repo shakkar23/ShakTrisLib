@@ -122,11 +122,11 @@ std::vector<Piece> Game::get_possible_piece_placements() const {
     if (current_piece.type == PieceType::Empty)
         return {};
 
-    std::vector<Piece> valid_pieces = Shaktris::MoveGen::Traditional::movegen(srs_rotate, board, current_piece.type);
+    std::vector<Piece> valid_pieces = Shaktris::MoveGen::Smeared::movegen(board, current_piece.type);
 
     PieceType holdType = hold.has_value() ? hold.value() : queue.front();
     if (holdType != PieceType::Empty) {
-        std::vector<Piece> hold_pieces = Shaktris::MoveGen::Traditional::movegen(srs_rotate, board, holdType);
+        std::vector<Piece> hold_pieces = Shaktris::MoveGen::Smeared::movegen(board, holdType);
         valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
         for (auto& piece : hold_pieces) {
             valid_pieces.emplace_back(piece);
