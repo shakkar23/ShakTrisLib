@@ -918,9 +918,6 @@ namespace Shaktris {
                     };
 
                 open_nodes.push_back({ Coord(4, 19), 0 });
-                open_nodes.push_back({ Coord(4, 19), 1 });
-                open_nodes.push_back({ Coord(4, 19), 2 });
-                open_nodes.push_back({ Coord(4, 19), 3 });
 
                 while (!open_nodes.empty()) {
                     for (const auto& piece : open_nodes) {
@@ -957,9 +954,9 @@ namespace Shaktris {
                         }
 
                         // rotate srs
-                        {
+                        if(type != PieceType::O) {
                             SmearedPiece next_piece = piece;
-
+                             
                             srs(s_board, next_piece, type, TurnDirection::Right);
 
                             next_nodes.push_back({ next_piece });
@@ -977,7 +974,8 @@ namespace Shaktris {
 							auto &col = s_board.boards[piece.rot].board[piece.position.x];
                             if (piece.position.y == 0 || col & (1 << (piece.position.y - 1))) {
                                 bool is_immobile_piece = is_immobile(s_board, piece);
-								ret.push_back({ type, (RotationDirection)piece.rot, piece.position , is_immobile_piece?spinType::normal:spinType::null});
+                                Piece p = Piece(type, (RotationDirection)piece.rot, piece.position, is_immobile_piece ? spinType::normal : spinType::null);
+								ret.push_back(p);
 							}
 						}
                     }
