@@ -41,4 +41,7 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET ShakTris PROPERTY CXX_STANDARD 20)
 endif()
 
-# TODO: Add tests and install targets if needed.
+set(CMAKE_CXX_STANDARD 20)
+add_executable(ShakTrisTest "test.cpp")
+
+target_link_libraries(ShakTrisTest ShakTris)
