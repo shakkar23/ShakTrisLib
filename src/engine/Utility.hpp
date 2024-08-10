@@ -37,36 +37,27 @@ namespace Shaktris {
                 piece.spin = spinType::null;
         }
 
-        constexpr inline void sonic_drop(const Board board, Piece& piece) {
-            int distance = sizeof(column_t) * CHAR_BIT;
-            for (auto& mino : piece.minos) {
+        constexpr inline void sonic_drop(const Board &board, Piece& piece) {
+            std::array<i8, 4> mino_heights;
+            for (size_t i = 0; i < 4; ++i) {
+                auto mino = piece.minos[i];
+                i8 mino_height = mino.y + piece.position.y;
 
-                int mino_height = mino.y + piece.position.y;
+                const auto column = board.board[mino.x + piece.position.x];
 
-                uint32_t column = board.board[mino.x + piece.position.x];
-
-                if (column && mino_height != 0) {
-                    int air = 32 - mino_height;
-                    mino_height -= 32 - std::countl_zero((column << air) >> air);
+                if (column && mino_height) {
+                    mino_height -= 32 - std::countl_zero(column & ((1 << mino_height) - 1));
                 }
 
-                distance = std::min(distance, mino_height);
+                mino_heights[i] = mino_height;
             }
-
-            piece.position.y -= distance;
+            i8 dist = mino_heights[0];
+            for(int i  = 1; i < 4; ++i) {
+                dist = std::min(dist, mino_heights[i]);
+			}
+            piece.position.y -= dist;
         }
 
-        constexpr inline int get_garbage_height(const Board& board) {
-
-            int max_air = -1;
-
-            for (int i = 0; i < Board::width; ++i) {
-                auto& col = board.board[i];
-                int air = std::countl_zero(col);
-                max_air = std::max(air, max_air);
-            }
-
-            return 32 - max_air;
-        }
+        
     };
 };

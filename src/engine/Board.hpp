@@ -175,5 +175,38 @@ public:
         return acc;
     }
 
+
+    constexpr bool is_convex() const {
+        Board shifted_board;
+
+        int garbage_height = get_garbage_height();
+
+        bool convex = true;
+
+        for (int i = 0; i < Board::width; ++i) {
+            shifted_board.board[i] = board[i] >> garbage_height;
+        }
+
+        for (int i = 0; i < Board::width; ++i) {
+            auto& col = shifted_board.board[i];
+            convex = convex && (std::popcount(col) == std::countr_one(col));
+        }
+
+        return convex;
+    }
+
+    constexpr int get_garbage_height() const {
+
+        int max_air = -1;
+
+        for (int i = 0; i < Board::width; ++i) {
+            auto& col = board[i];
+            int air = std::countl_zero(col);
+            max_air = std::max(air, max_air);
+        }
+
+        return 32 - max_air;
+    }
+
     std::array<column_t, Board::width> board;
 };

@@ -138,13 +138,13 @@ std::vector<Move> VersusGame::get_moves(int id) const {
 
     const Game& player = id == 0 ? p1_game : p2_game;
 
-    auto movegen_pieces = Shaktris::MoveGen::movegen(srs_rotate, player.board, player.current_piece.type);
+    auto movegen_pieces = Shaktris::MoveGen::Traditional::movegen(srs_rotate, player.board, player.current_piece.type);
 
     PieceType hold = player.hold.has_value() ? player.hold.value() : player.queue.front();
 
     std::vector<Piece> hold_pieces;
     if (hold != PieceType::Empty)
-        hold_pieces = Shaktris::MoveGen::movegen(srs_rotate, player.board, hold);
+        hold_pieces = Shaktris::MoveGen::Traditional::movegen(srs_rotate, player.board, hold);
 
     moves.reserve((movegen_pieces.size() + hold_pieces.size()) * 2);
 
@@ -163,10 +163,10 @@ std::vector<Move> VersusGame::get_moves(int id) const {
 
 std::vector<Move> VersusGame::get_N_moves(int id, int N) const {
     const Game& player = id == 0 ? p1_game : p2_game;
-    std::vector<Piece> valid_pieces = Shaktris::MoveGen::movegen(srs_rotate, player.board, player.current_piece.type);
+    std::vector<Piece> valid_pieces = Shaktris::MoveGen::Traditional::movegen(srs_rotate, player.board, player.current_piece.type);
     PieceType holdType = player.hold.has_value() ? player.hold.value() : player.queue.front();
 
-    std::vector<Piece> hold_pieces = Shaktris::MoveGen::movegen(srs_rotate, player.board, holdType);
+    std::vector<Piece> hold_pieces = Shaktris::MoveGen::Traditional::movegen(srs_rotate, player.board, holdType);
     valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
     for (auto& piece : hold_pieces) {
         valid_pieces.emplace_back(piece);

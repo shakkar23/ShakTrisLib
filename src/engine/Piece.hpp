@@ -20,6 +20,13 @@ public:
         minos = rot_piece_def[static_cast<size_t>(dir)][static_cast<size_t>(type)];
         spin = spinType::null;
     }
+    constexpr Piece(PieceType type, RotationDirection dir, Coord pos) noexcept {
+		this->type = type;
+		rotation = dir;
+		position = pos;
+		minos = rot_piece_def[static_cast<size_t>(dir)][static_cast<size_t>(type)];
+		spin = spinType::null;
+	}
 
     Piece() = delete;
     // Copy constructor
