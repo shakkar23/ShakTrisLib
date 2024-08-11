@@ -9,7 +9,7 @@ int main() {
 
 	Board board;
 
-	Piece piece = PieceType::T;
+	Piece piece = PieceType::O;
 
 	Shaktris::Utility::sonic_drop(board, piece);
 	piece.position.y += 5;
@@ -33,10 +33,6 @@ int main() {
 
 	auto real_moves = Shaktris::MoveGen::Traditional::movegen(srs_rotate,board, piece.type);
 	
-	auto cmp = [](const Piece& a, const Piece& b) {
-		return a.position.x == b.position.x && a.position.y == b.position.y && a.rotation == b.rotation;
-	};
-
 	// print moves variable
 	std::cout << "number of moves: " << moves.size() << std::endl;
 	for (auto& move : moves) {
