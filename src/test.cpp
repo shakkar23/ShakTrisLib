@@ -9,7 +9,7 @@ int main() {
 
 	Board board;
 
-	Piece piece = PieceType::O;
+	Piece piece = PieceType::J;
 
 	Shaktris::Utility::sonic_drop(board, piece);
 	piece.position.y += 5;

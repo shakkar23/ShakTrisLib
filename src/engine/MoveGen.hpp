@@ -736,8 +736,10 @@ namespace Shaktris {
                 for (int b_index = 0; b_index < smeared_board.boards.size(); ++b_index) {
                     const auto& s_board = smeared_board.boards[b_index];
                     for (int x = 0; x < Board::width; x++) {
-                        // if column is equal to limits max or zero skip
-                        if (s_board.board[x] == std::numeric_limits<column_t>::max())
+                        // if column is nearly full skip 
+                        // (this is because the faster way of smearing does not set top bits because of the shift after the not)
+                        // two because the I piece sticks out that long
+                        if (s_board.board[x] >= std::numeric_limits<column_t>::max() >> 2)
                             continue;
 
                         auto height = (sizeof(column_t) * CHAR_BIT) - std::countl_zero(s_board.board[x]);
