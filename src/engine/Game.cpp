@@ -125,7 +125,7 @@ std::vector<Piece> Game::get_possible_piece_placements() const {
     std::vector<Piece> valid_pieces = Shaktris::MoveGen::Smeared::god_movegen(board, current_piece.type);
 
     PieceType holdType = hold.has_value() ? hold.value() : queue.front();
-    if (holdType != PieceType::Empty) {
+    if (holdType != PieceType::Empty && holdType != current_piece.type) {
         std::vector<Piece> hold_pieces = Shaktris::MoveGen::Smeared::god_movegen(board, holdType);
         valid_pieces.reserve(valid_pieces.size() + hold_pieces.size());
         for (auto& piece : hold_pieces) {
