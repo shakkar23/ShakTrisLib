@@ -8,7 +8,7 @@
     #if __GNUC__ && !__clang__ && __BMI2__
         // gcc
        #include <immintrin.h>
-    #else
+    #elif __clang__ && __BMI2__
         // clang
        #include <immintrin.h>
     #endif
@@ -38,7 +38,7 @@ constexpr T pext(const T src, const T mask) {
     }
 
 
-#if (defined(__x86_64__) || defined(_M_X64)) && (__GNUC__ && !__clang__ && __BMI2__) || __clang__
+#if (defined(__x86_64__) || defined(_M_X64)) && (__GNUC__ && !__clang__ && __BMI2__) || __clang__ && __BMI2__
     if constexpr (std::same_as<T, std::uint64_t>) {
         return _pext_u64(src, mask);
     }
