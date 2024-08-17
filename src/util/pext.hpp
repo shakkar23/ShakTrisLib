@@ -1,11 +1,11 @@
+#include <climits>
 #include <concepts>
 #include <cstdint>
-#include <climits>
 #include <type_traits>
 
 // if either clang/gcc
 #if defined(__x86_64__) || defined(_M_X64)
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && defined __BMI2__
 #define SHAK_PEXTABLE
 // gcc
 #include <x86gprintrin.h>
