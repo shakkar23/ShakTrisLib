@@ -295,19 +295,7 @@ namespace Shaktris {
             inline std::vector<Piece> movegen(const rotation_function rot_func, const Board& board, PieceType piece_type) {
 
                 bool convex = board.is_convex();
-                bool low = [](const Board& board) {
-                    constexpr auto p = Piece(PieceType::I);
-
-                    constexpr uint32_t high_collider = ~((1 << (p.position.y - 2)) - 1);
-
-                    bool ret = true;
-
-                    for (size_t x = 0; x < Board::width; x++) {
-                        if (board.get_column(x) & high_collider)
-                            ret = false;
-                    }
-                    return ret;
-                    }(board);
+                bool low = board.is_low();
 
                 if (convex && low) {
                     return sky_piece_movegen(board, piece_type);
@@ -858,7 +846,7 @@ namespace Shaktris {
                 std::vector<SmearedPiece> open_nodes; open_nodes.reserve(200);
                 std::vector<SmearedPiece> next_nodes; next_nodes.reserve(200);
                 std::vector<Piece> ret; ret.reserve(200);
-                std::vector<bool> visited(32 * 10 * 4);
+                std::bitset<32 * 10 * 4> visited;
                 auto to_iter = [&](u8 x, u8 y, u8 r) {
                     return r + x * 4 + y * 4 * 10;
                 };

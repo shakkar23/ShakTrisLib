@@ -122,3 +122,4 @@ consteval auto generate_rot_piece_def() {
 // rot_piece_def[rot][type]
 constexpr std::array<std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def = generate_rot_piece_def();
 
+constexpr i8 piece_spawn_height = 19;

@@ -4,6 +4,7 @@
 #include <bit>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 
 #include "Piece.hpp"
 #include "util/pext.hpp"
@@ -207,6 +208,19 @@ public:
 
         return 32 - max_air;
     }
+
+
+    constexpr bool is_low() const {
+        constexpr uint32_t high_collider = ~((1 << (piece_spawn_height - 2)) - 1);
+
+        bool ret = true;
+
+        for (size_t x = 0; x < Board::width; x++) {
+            if (this->get_column(x) & high_collider)
+                ret = false;
+        }
+        return ret;
+    };
 
     std::array<column_t, Board::width> board;
 };
