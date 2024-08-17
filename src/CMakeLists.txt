@@ -30,7 +30,10 @@ set( SHAKTRIS_HEADERS
 )
 if(NOT MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+else()
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2")
 endif()
+
 # Add source to this project's executable.
 add_library(ShakTris STATIC ${SHAKTRIS_SOURCES})
 

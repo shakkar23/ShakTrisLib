@@ -28,15 +28,15 @@ int main() {
 	Piece piece = PieceType::J;
 
 	Shaktris::Utility::sonic_drop(board, piece);
+	board.set(piece);
 	piece.position.y += 5;
-	//board.set(piece);
 	piece.position.x += 2;
 	//board.set(piece);
 
-	std::cout << std::bitset<32>(4294967295).count() << std::endl;
-	return 0;
+	//std::cout << std::bitset<32>(4294967295).count() << std::endl;
+	//return 0;
 	std::vector<Piece> moves;
-	constexpr auto count = 1;
+	constexpr auto count = 25'000'000;
 
 	auto start = std::chrono::steady_clock::now();
 	for (int i = 0; i < count; ++i) {
@@ -46,7 +46,7 @@ int main() {
 	// print the amount of functions calls we can do in one second
 	auto time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 	double s = count / (time / 1e+9);
-	std::cout << "time: " << time << std::endl;
+	std::cout << "time: " << s << std::endl;
 
 	// print moves variable
 	std::cout << "number of moves: " << moves.size() << std::endl;

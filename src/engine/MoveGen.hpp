@@ -704,10 +704,8 @@ namespace Shaktris {
                     for (const Coord& mino : rot_piece_def[static_cast<size_t>(rot)][static_cast<size_t>(type)]) {
                         for (int x = 0; x < Board::width; x++) {
                             auto c = ((x + mino.x) >= 0 && (x + mino.x) < board.board.size()) ? board.board[x + mino.x] : column_t(~0);
-                            if (mino.y < 0)
-                                c = ~(~c << -mino.y);
-                            else
-                                c = c >> mino.y;
+                            bool cond = (mino.y < 0);
+                            c = (~cond * (c >> mino.y)) | (cond * ~(~c << -mino.y));
 
                             ret.boards[rot].board[x] |= c;
                         }
@@ -727,15 +725,14 @@ namespace Shaktris {
                         // if column is nearly full skip 
                         // (this is because the faster way of smearing does not set top bits because of the shift after the not)
                         // two because the I piece sticks out that long
-                        if (s_board.board[x] >= std::numeric_limits<column_t>::max() >> 2)
-                            continue;
+                        bool cond = (s_board.board[x] >= std::numeric_limits<column_t>::max() >> 2);
 
                         auto height = (sizeof(column_t) * CHAR_BIT) - std::countl_zero(s_board.board[x]);
-                        ret.boards[b_index].board[x] = 1 << height; // set the column to the height
+                        ret.boards[b_index].board[x] = cond * (1 << height); // set the column to the height
                     }
-                    if(type == PieceType::O) {
+                    if (type == PieceType::O) {
                         break;
-					}
+                    }
                 }
 
                 return ret;
