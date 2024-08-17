@@ -9,12 +9,14 @@
 #define SHAK_PEXTABLE
 // gcc
 #include <x86gprintrin.h>
-#elif defined(__clang__) && (!(defined(_MSC_VER) || defined(__SCE__)) || __has_feature(modules) ||      \
+#elif defined(__clang__) 
+#if(!(defined(_MSC_VER) || defined(__SCE__)) || __has_feature(modules) ||      \
     defined(__BMI2__))
 #if __BMI2__
 #define SHAK_PEXTABLE
 // clang
 #include <immintrin.h>
+#endif
 #endif
 #endif
 #endif
