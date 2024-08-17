@@ -5,19 +5,14 @@
 
 // if either clang/gcc
 #if defined(__x86_64__) || defined(_M_X64)
-    #ifdef __GNUC__
-    #ifndef __clang__
-    #ifdef __BMI2__
-    // gcc
-    #include <immintrin.h>
-    #endif
+    #ifdef __GNUC__ && !__clang__ && __BMI2__
+        // gcc
+       #include <immintrin.h>
     #else
-    // clang
-    #include <immintrin.h>
-    #endif
+        // clang
+       #include <immintrin.h>
     #endif
 #endif
-
 // this is not specific to any architecture or integer size
 // but its fine cause we should only be using this on u32s or u64s
 
