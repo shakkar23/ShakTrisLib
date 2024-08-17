@@ -5,7 +5,7 @@
 
 // if either clang/gcc
 #if defined(__x86_64__) || defined(_M_X64)
-    #ifdef __GNUC__ && !__clang__ && __BMI2__
+    #if __GNUC__ && !__clang__ && __BMI2__
         // gcc
        #include <immintrin.h>
     #else
