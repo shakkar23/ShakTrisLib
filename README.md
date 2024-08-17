@@ -13,7 +13,7 @@ target_link_libraries(${PROJECT_NAME} ShakTrisLib)
 ### You will have access to all of the header files that are in the src directory of this library and you can include them in your project as needed.
 
 ## Building
-### To build this library, you will need to have access to C\+\+20 features. g\+\+-13 and beyond will work for this project.
+### To build this library, you will need to have access to C\+\+20 features. g\+\+-13 or clang-16 and beyond will work for this project.
 
 ## Features
 - [x] Efficient BitBoard implementation using bit operations
