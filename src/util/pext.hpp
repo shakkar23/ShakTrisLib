@@ -4,16 +4,18 @@
 #include <type_traits>
 
 // if either clang/gcc
-#ifdef __GNUC__
-#ifndef __clang__
-#ifdef __BMI2__
-// gcc
-#include <immintrin.h>
-#endif
-#else
-// clang
-#include <immintrin.h>
-#endif
+#if defined(__x86_64__) || defined(_M_X64)
+    #ifdef __GNUC__
+    #ifndef __clang__
+    #ifdef __BMI2__
+    // gcc
+    #include <immintrin.h>
+    #endif
+    #else
+    // clang
+    #include <immintrin.h>
+    #endif
+    #endif
 #endif
 
 // this is not specific to any architecture or integer size
