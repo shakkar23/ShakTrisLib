@@ -5,13 +5,16 @@
 
 // if either clang/gcc
 #if defined(__x86_64__) || defined(_M_X64)
-    #if __GNUC__ && !__clang__ && __BMI2__
-        // gcc
-       #include <immintrin.h>
-    #elif __clang__ && __BMI2__
-        // clang
-       #include <immintrin.h>
-    #endif
+#if defined(__GNUC__) && !defined(__clang__)
+#define SHAK_PEXTABLE
+// gcc
+#include <x86gprintrin.h>
+#elif defined(__clang__) && !(defined(_MSC_VER) || defined(__SCE__)) || __has_feature(modules) || \
+    defined(__BMI2__)
+#define SHAK_PEXTABLE
+// clang
+#include <immintrin.h>
+#endif
 #endif
 // this is not specific to any architecture or integer size
 // but its fine cause we should only be using this on u32s or u64s
@@ -37,8 +40,7 @@ constexpr T pext(const T src, const T mask) {
         return pext_impl(src, mask);
     }
 
-
-#if (defined(__x86_64__) || defined(_M_X64)) && (__GNUC__ && !__clang__ && __BMI2__) || __clang__ && __BMI2__
+#if defined(SHAK_PEXTABLE)
     if constexpr (std::same_as<T, std::uint64_t>) {
         return _pext_u64(src, mask);
     }

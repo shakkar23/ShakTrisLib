@@ -20,6 +20,7 @@ char rot_to_char(RotationDirection rot) {
 	return 'X';
 }
 
+#include <immintrin.h>
 int main() {
 
 	Board board;
@@ -28,14 +29,14 @@ int main() {
 
 	Shaktris::Utility::sonic_drop(board, piece);
 	piece.position.y += 5;
-	board.set(piece);
+	//board.set(piece);
 	piece.position.x += 2;
-	board.set(piece);
+	//board.set(piece);
 
-
-
+	std::cout << std::bitset<32>(4294967295).count() << std::endl;
+	return 0;
 	std::vector<Piece> moves;
-	constexpr auto count = 10'000'000;
+	constexpr auto count = 1;
 
 	auto start = std::chrono::steady_clock::now();
 	for (int i = 0; i < count; ++i) {
