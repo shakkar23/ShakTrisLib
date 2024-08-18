@@ -705,7 +705,7 @@ namespace Shaktris {
                         for (int x = 0; x < Board::width; x++) {
                             auto c = ((x + mino.x) >= 0 && (x + mino.x) < board.board.size()) ? board.board[x + mino.x] : column_t(~0);
                             bool cond = (mino.y < 0);
-                            c = (~cond * (c >> mino.y)) | (cond * ~(~c << -mino.y));
+                            c = ((!cond) * (c >> mino.y)) | (cond * ~(~c << -mino.y));
 
                             ret.boards[rot].board[x] |= c;
                         }
@@ -728,7 +728,7 @@ namespace Shaktris {
                         bool cond = (s_board.board[x] >= std::numeric_limits<column_t>::max() >> 2);
 
                         auto height = (sizeof(column_t) * CHAR_BIT) - std::countl_zero(s_board.board[x]);
-                        ret.boards[b_index].board[x] = cond * (1 << height); // set the column to the height
+                        ret.boards[b_index].board[x] = (!cond) * (1 << height); // set the column to the height
                     }
                     if (type == PieceType::O) {
                         break;
