@@ -184,8 +184,8 @@ public:
 
         bool convex = true;
 
-        for (size_t j = 0; j < Board::width; ++j) {
-            shifted_board.board[j] = board[j] >> garbage_height;
+        for (size_t i = 0; i < Board::width; ++i) {
+            shifted_board.board[i] = board[i] >> garbage_height;
         }
 
         for (int i = 0; i < Board::width; ++i) {
