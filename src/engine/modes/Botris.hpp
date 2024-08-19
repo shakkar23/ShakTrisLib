@@ -31,12 +31,12 @@ struct Botris {
 		}
 
 		if (linesCleared) {
-			garbage += attack_table[linesCleared];
+			garbage += attack_table[static_cast<size_t>(linesCleared)];
 			if(spin == spinType::normal)
-				garbage += all_spin_bonus[linesCleared];
+				garbage += all_spin_bonus[static_cast<size_t>(linesCleared)];
 
 			// combo
-			garbage += combo_table[std::min(combo_table.size() - 1, (size_t)combo)];
+			garbage += combo_table[std::min(combo_table.size() - 1, static_cast<size_t>(combo))];
 
 			if (pc)
 				garbage += pc_bonus;

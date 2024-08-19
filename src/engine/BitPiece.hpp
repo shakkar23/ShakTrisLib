@@ -10,17 +10,17 @@ using piece_data_t = std::array<column_t, 4>;
 constexpr auto generate_bit_piece_defs() {
 	std::array<std::array<piece_data_t, (size_t)RotationDirections_N>, (size_t)PieceType::PieceTypes_N> bit_piece_rot_def{};
 
-	for (int type = 0; type < (int)PieceType::PieceTypes_N; type++) {
+	for (size_t type = 0; type < (size_t)PieceType::PieceTypes_N; type++) {
 
-		if (type != (int)PieceType::I && type != (int)PieceType::O) {
+		if (type != (size_t)PieceType::I && type != (size_t)PieceType::O) {
 			// found the type in trivial pieces
 
 			Piece piece = Piece((PieceType)type);
 
-			for (int rot = 0; rot < (int)RotationDirections_N; ++rot) {
+			for (size_t rot = 0; rot < (size_t)RotationDirections_N; ++rot) {
 
 				for (const auto& coord : piece.minos) {
-					bit_piece_rot_def[type][rot][coord.x + 1] |= 1 << (coord.y + 1);
+					bit_piece_rot_def[type][rot][static_cast<size_t>(coord.x + 1)] |= 1 << (coord.y + 1);
 				}
 
 				piece.rotate(TurnDirection::Right);
@@ -30,7 +30,7 @@ constexpr auto generate_bit_piece_defs() {
 
 	// do the O piece
 
-	for (int rot = 0; rot < (int)RotationDirections_N; ++rot) {
+	for (size_t rot = 0; rot < (size_t)RotationDirections_N; ++rot) {
 		bit_piece_rot_def[(size_t)PieceType::O][rot][0] = 0b0000;
 		bit_piece_rot_def[(size_t)PieceType::O][rot][1] = 0b0110;
 		bit_piece_rot_def[(size_t)PieceType::O][rot][2] = 0b0110;

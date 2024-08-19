@@ -31,7 +31,7 @@ void VersusGame::play_moves() {
         p1_cleared_lines = p1_game.board.clearLines();
 
         bool pc = true;
-        for (int i = 0; i < Board::width; i++) {
+        for (size_t i = 0; i < Board::width; i++) {
             if (p1_game.board.get_column(i) != 0) {
                 pc = false;
                 break;
@@ -63,7 +63,7 @@ void VersusGame::play_moves() {
         p2_cleared_lines = p2_game.board.clearLines();
 
         bool pc = true;
-        for (int i = 0; i < Board::width; i++) {
+        for (size_t i = 0; i < Board::width; i++) {
             if (p2_game.board.get_column(i) != 0) {
                 pc = false;
                 break;
@@ -201,7 +201,7 @@ std::vector<Move> VersusGame::get_N_moves(int id, int N) const {
 
         sampled_indices.insert(index);
 
-        out.emplace_back(moves[index]);
+        out.emplace_back(moves[static_cast<size_t>(index)]);
     }
 
     return out;

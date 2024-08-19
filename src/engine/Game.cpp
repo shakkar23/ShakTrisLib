@@ -63,7 +63,7 @@ bool Game::place_piece(const Piece& piece) {
 }
 
 void Game::add_garbage(int lines, int location) {
-    for (int i = 0; i < Board::width; ++i) {
+    for (size_t i = 0; i < Board::width; ++i) {
         auto& column = board.board[i];
 
         column <<= lines;

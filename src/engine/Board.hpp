@@ -101,17 +101,17 @@ public:
         }
 
         last_column = UINT32_MAX;
-        for (int i = Board::width; i <= 0; i--) {
+        for (size_t i = Board::width; i <= 0; i--) {
             std::swap(right_bounded.board[i], last_column);
         }
 
         // and the boards together, and then OR it with the original board
 
-        for (int i = 0; i < Board::width; i++) {
+        for (size_t i = 0; i < Board::width; i++) {
             left_bounded.board[i] = left_bounded.board[i] & right_bounded.board[i];
         }
 
-        for (int i = 0; i < Board::width; i++) {
+        for (size_t i = 0; i < Board::width; i++) {
             left_bounded.board[i] = left_bounded.board[i] | board[i];
         }
         // left_bounded is now our bounded_board but in the wrong format
@@ -145,7 +145,7 @@ public:
 
         // if the mask is the same as the height, then the column meets the requirements
         // so we set the bit to 1
-        for (int i = 0; i < Board::width; i++) {
+        for (size_t i = 0; i < Board::width; i++) {
             full_board |= (std::popcount(board[i]) == height) ? 1 << i : 0;
         }
         return full_board;
@@ -154,12 +154,12 @@ public:
     constexpr inline bool has_imbalanced_split(int height) const {
         u32 full_cols = full(height);
 
-        for (int i = 1; i < Board::width - 1; i++) {
+        for (size_t i = 1; i < Board::width - 1; i++) {
             if ((full_cols >> i) & 1) {
                 // if the number of empty minos to the left as well as right are not modulo 4 (the number of minos in a piece)
                 // then we have an imbalanced split, and thats impossible to solve
                 int right_empty = 0;
-                for (int j = i + 1; j < Board::width; ++j) {
+                for (size_t j = i + 1; j < Board::width; ++j) {
                     right_empty += height - std::popcount(board[j]);
                 }
 
@@ -194,7 +194,7 @@ public:
             shifted_board.board[i] = board[i] >> garbage_height;
         }
 
-        for (int i = 0; i < Board::width; ++i) {
+        for (size_t i = 0; i < Board::width; ++i) {
             auto& col = shifted_board.board[i];
             convex = convex && (std::popcount(col) == std::countr_one(col));
         }
@@ -206,7 +206,7 @@ public:
 
         int max_air = -1;
 
-        for (int i = 0; i < Board::width; ++i) {
+        for (size_t i = 0; i < Board::width; ++i) {
             auto& col = board[i];
             int air = std::countl_zero(col);
             max_air = std::max(air, max_air);
