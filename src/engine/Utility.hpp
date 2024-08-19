@@ -43,7 +43,7 @@ namespace Shaktris {
                 auto mino = piece.minos[i];
                 i8 mino_height = mino.y + piece.position.y;
 
-                const auto column = board.board[mino.x + piece.position.x];
+                const auto column = board.board[static_cast<size_t>(mino.x + piece.position.x)];
 
                 if (column && mino_height) {
                     mino_height -= 32 - std::countl_zero(column & ((1 << mino_height) - 1));
@@ -52,7 +52,7 @@ namespace Shaktris {
                 mino_heights[i] = mino_height;
             }
             i8 dist = mino_heights[0];
-            for(int i  = 1; i < 4; ++i) {
+            for(size_t i  = 1; i < 4; ++i) {
                 dist = std::min(dist, mino_heights[i]);
 			}
             piece.position.y -= dist;

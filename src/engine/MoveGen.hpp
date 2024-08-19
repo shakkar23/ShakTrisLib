@@ -57,7 +57,7 @@ consteval static size_t zero_g_starts_size(const PieceType p) {
     valid_moves.reserve(150);
 
     // rotations
-    for (int r = 0; r < RotationDirections_N; r++) {
+    for (int r = 0; r < (int)RotationDirections_N; r++) {
         open_nodes.emplace_back(initial_piece);
         if (initial_piece.type != PieceType::O)
             initial_piece.rotate(TurnDirection::Right);
@@ -66,7 +66,7 @@ consteval static size_t zero_g_starts_size(const PieceType p) {
         while (open_nodes.size() > 0) {
             // expand edges
             for (const auto& piece : open_nodes) {
-                auto h = piece.compact_hash();
+                size_t h = piece.compact_hash();
                 if (visited[h])
                     continue;
                 // mark node as visited
@@ -151,7 +151,7 @@ consteval static auto zero_g_starts() {
         while (open_nodes.size() > 0) {
             // expand edges
             for (const auto& piece : open_nodes) {
-                auto h = piece.compact_hash();
+                size_t h = piece.compact_hash();
                 if (visited[h])
                     continue;
                 // mark node as visited
@@ -260,7 +260,7 @@ namespace Shaktris {
                     while (open_nodes.size() > 0) {
                         // expand edges
                         for (auto& piece : open_nodes) {
-                            auto h = piece.compact_hash();
+                            size_t h = piece.compact_hash();
                             if (visited[h])
                                 continue;
                             // mark node as visited
@@ -331,7 +331,7 @@ namespace Shaktris {
                 while (open_nodes.size() > 0) {
                     // expand edges
                     for (auto& piece : open_nodes) {
-                        auto h = piece.compact_hash();
+                        size_t h = piece.compact_hash();
                         if (visited[h])
                             continue;
                         // mark node as visited
@@ -418,10 +418,10 @@ namespace Shaktris {
                     //    A & ~B
                     // where A is the piece and B is this
 
-                    for (int b_index = 0; b_index < boards.size(); ++b_index) {
+                    for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
                         const auto& board = boards[b_index];
                         const auto& piece = pieces.boards[b_index];
-                        for (int x = 0; x < Board::width; x++) {
+                        for (size_t x = 0; x < Board::width; x++) {
                             pieces.boards[b_index].board[x] = piece.board[x] & ~board.board[x];
                         }
                     }
@@ -448,7 +448,7 @@ namespace Shaktris {
                     SmearedBoard right_rotating_set = pieces;
 
                     // for every piece offset
-                    for (int srs_i = 0; srs_i < srs_kicks; srs_i++) {
+                    for (size_t srs_i = 0; srs_i < srs_kicks; srs_i++) {
 
                         std::array<Coord, 4> rot_offsets;
                         rot_offsets[0].x = (*prev_offsets)[3][srs_i].x - (*offsets)[0][srs_i].x;
@@ -534,7 +534,7 @@ namespace Shaktris {
                 inline void rotate_right() {
                     Board tmp = boards[boards.size() - 1];
 
-                    for (int b_index = boards.size() - 1; b_index > 0; --b_index) {
+                    for (size_t b_index = boards.size() - 1; b_index > 0; --b_index) {
                         boards[b_index] = boards[b_index - 1];
                     }
                     boards[0] = tmp;
@@ -543,7 +543,7 @@ namespace Shaktris {
                 inline void rotate_left() {
                     Board tmp = boards[0];
 
-                    for (int b_index = 0; b_index < boards.size() - 1; ++b_index) {
+                    for (size_t b_index = 0; b_index < boards.size() - 1; ++b_index) {
                         boards[b_index] = boards[b_index + 1];
                     }
                     boards[boards.size() - 1] = tmp;
@@ -551,14 +551,14 @@ namespace Shaktris {
 
                 inline void offset(const std::array<Coord, 4>& offsets) {
 
-                    for (int rot = 0; rot < 4; ++rot) {
+                    for (size_t rot = 0; rot < 4; ++rot) {
                         i8 dx = offsets[rot].x;
                         i8 dy = offsets[rot].y;
                         Board& current_smear = this->boards[rot];
                         Board tmp_board = boards[rot];
 
                         // shift the board up or down depending on the mino location (-y)
-                        for (int i = 0; i < Board::width; ++i) {
+                        for (size_t i = 0; i < Board::width; ++i) {
                             auto& tmp_col = tmp_board.board[i];
                             auto real_col = boards[rot].board[i];
                             if (dy > 0)
@@ -569,7 +569,7 @@ namespace Shaktris {
                             tmp_col |= real_col;
                         }
 
-                        for (int x = 1; x < Board::width - 1; ++x) {
+                        for (size_t x = 1; x < Board::width - 1; ++x) {
                             auto& smear_col = current_smear.board[x];
                             auto& tmp_col = tmp_board.board[x + dx];
 
@@ -585,11 +585,11 @@ namespace Shaktris {
 
                     SmearedBoard ret;
 
-                    for (int b_index = 0; b_index < boards.size(); ++b_index) {
+                    for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
                         auto& board = this->boards[b_index];
                         auto& piece = pieces.boards[b_index];
 
-                        for (int x = 0; x < Board::width; x++) {
+                        for (size_t x = 0; x < Board::width; x++) {
                             auto piece_col = piece.board[x];
                             for (int n = 0; n < 32; n++) {
                                 piece_col |= (piece_col >> 1) & ~board.board[x];
@@ -610,11 +610,11 @@ namespace Shaktris {
 
                     SmearedBoard ret;
 
-                    for (int b_index = 0; b_index < boards.size(); ++b_index) {
+                    for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
                         auto& board = this->boards[b_index];
                         const auto& piece = pieces.boards[b_index];
 
-                        for (int x = 0; x < Board::width; x++) {
+                        for (size_t x = 0; x < Board::width; x++) {
                             auto piece_col = piece.board[x];
                             auto board_col = board.board[x];
 
@@ -630,30 +630,30 @@ namespace Shaktris {
                 }
 
                 inline void operator|=(const SmearedBoard& other) {
-                    for (int b_index = 0; b_index < boards.size(); ++b_index) {
+                    for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
                         auto& board = boards[b_index];
                         const auto& other_board = other.boards[b_index];
-                        for (int x = 0; x < Board::width; x++) {
+                        for (size_t x = 0; x < Board::width; x++) {
                             board.board[x] |= other_board.board[x];
                         }
                     }
                 }
 
                 inline void operator&=(const SmearedBoard& other) {
-                    for (int b_index = 0; b_index < boards.size(); ++b_index) {
+                    for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
                         auto& board = boards[b_index];
                         const auto& other_board = other.boards[b_index];
-                        for (int x = 0; x < Board::width; x++) {
+                        for (size_t x = 0; x < Board::width; x++) {
                             board.board[x] &= other_board.board[x];
                         }
                     }
                 }
 
                 inline void operator^=(const SmearedBoard& other) {
-                    for (int b_index = 0; b_index < boards.size(); ++b_index) {
+                    for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
                         auto& board = boards[b_index];
                         const auto& other_board = other.boards[b_index];
-                        for (int x = 0; x < Board::width; x++) {
+                        for (size_t x = 0; x < Board::width; x++) {
                             board.board[x] ^= other_board.board[x];
                         }
                     }
@@ -662,10 +662,10 @@ namespace Shaktris {
                 inline SmearedBoard operator^(const SmearedBoard& other) const {
                     SmearedBoard ret;
 
-                    for (int b_index = 0; b_index < boards.size(); ++b_index) {
+                    for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
                         auto& board = boards[b_index];
                         const auto& other_board = other.boards[b_index];
-                        for (int x = 0; x < Board::width; x++) {
+                        for (size_t x = 0; x < Board::width; x++) {
                             ret.boards[b_index].board[x] = board.board[x] ^ other_board.board[x];
                         }
                     }
@@ -682,9 +682,9 @@ namespace Shaktris {
             inline std::vector<Piece> moves_to_vec(const SmearedBoard& moves, PieceType type) {
                 std::vector<Piece> ret;
                 ret.reserve(150);
-                for (int b_index = 0; b_index < moves.boards.size(); ++b_index) {
+                for (size_t b_index = 0; b_index < moves.boards.size(); ++b_index) {
                     const auto& board = moves.boards[b_index];
-                    for (int x = 0; x < Board::width; x++) {
+                    for (size_t x = 0; x < Board::width; x++) {
                         auto col = moves.boards[b_index].board[x];
                         while (auto height = (sizeof(column_t) * CHAR_BIT) - std::countl_zero(col)) {
                             ret.emplace_back(type, (RotationDirection)b_index, Coord(x, height - 1));
@@ -700,9 +700,9 @@ namespace Shaktris {
             inline SmearedBoard smear(const Board& board, PieceType type) {
                 SmearedBoard ret{};
 
-                for (int rot = 0; rot < 4; rot++) {
-                    for (const Coord& mino : rot_piece_def[static_cast<size_t>(rot)][static_cast<size_t>(type)]) {
-                        for (int x = 0; x < Board::width; x++) {
+                for (size_t rot = 0; rot < 4; rot++) {
+                    for (const Coord& mino : rot_piece_def[rot][static_cast<size_t>(type)]) {
+                        for (size_t x = 0; x < Board::width; x++) {
                             auto c = ((x + mino.x) >= 0 && (x + mino.x) < board.board.size()) ? board.board[x + mino.x] : column_t(~0);
                             if (mino.y < 0)
                                 c = ~(~c << -mino.y);
@@ -721,9 +721,9 @@ namespace Shaktris {
             inline SmearedBoard convex_movegen(const Board& board, PieceType type) {
                 SmearedBoard ret{};
                 const SmearedBoard smeared_board = smear(board, type);
-                for (int b_index = 0; b_index < smeared_board.boards.size(); ++b_index) {
+                for (size_t b_index = 0; b_index < smeared_board.boards.size(); ++b_index) {
                     const auto& s_board = smeared_board.boards[b_index];
-                    for (int x = 0; x < Board::width; x++) {
+                    for (size_t x = 0; x < Board::width; x++) {
                         // if column is nearly full skip 
                         // (this is because the faster way of smearing does not set top bits because of the shift after the not)
                         // two because the I piece sticks out that long
@@ -791,7 +791,7 @@ namespace Shaktris {
 
 
             inline void srs(const SmearedBoard& s_board, SmearedPiece& p, PieceType type, TurnDirection dir) {
-                u8 prev_rot = p.rot;
+                size_t prev_rot = p.rot;
 
                 const auto* offsets = &piece_offsets_JLSTZ;
                 const auto* prev_offsets = &piece_offsets_JLSTZ;
@@ -813,10 +813,10 @@ namespace Shaktris {
                     p.rot = (p.rot + 3) % 4;
                 }
 
-                for (int i = 0; i < srs_kicks; ++i) {
+                for (size_t i = 0; i < srs_kicks; ++i) {
                     const Coord offset = Coord(
-                        (i8)(*prev_offsets)[prev_rot][i].x - (i8)(*offsets)[p.rot][i].x,
-                        (i8)(*prev_offsets)[prev_rot][i].y - (i8)(*offsets)[p.rot][i].y
+                        (i8)(*prev_offsets)[prev_rot][i].x - (i8)(*offsets)[static_cast<size_t>(p.rot)][i].x,
+                        (i8)(*prev_offsets)[prev_rot][i].y - (i8)(*offsets)[static_cast<size_t>(p.rot)][i].y
                     );
 
                     SmearedPiece tmp = p;
@@ -825,7 +825,7 @@ namespace Shaktris {
 
                     if (tmp.position.x >= 0 && tmp.position.x < Board::width) {
                         if (tmp.position.y >= 0) {
-                            auto& col = s_board.boards[p.rot].board[tmp.position.x];
+                            auto& col = s_board.boards[static_cast<size_t>(p.rot)].board[static_cast<size_t>(tmp.position.x)];
                             if (!(col & (1 << tmp.position.y))) {
                                 p = tmp;
                                 return;
@@ -861,7 +861,7 @@ namespace Shaktris {
                     }
                     else
                     {
-                        const auto col = board.boards[piece.rot].board[piece.position.x - 1];
+                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x - 1)];
                         if (col & (1 << piece.position.y))
                         {
                             left = true;
@@ -874,7 +874,7 @@ namespace Shaktris {
                     }
                     else
                     {
-                        const auto col = board.boards[piece.rot].board[piece.position.x + 1];
+                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x + 1)];
                         if (col & (1 << piece.position.y))
                         {
                             right = true;
@@ -887,7 +887,7 @@ namespace Shaktris {
 					}
                     else
                     {
-                        const auto col = board.boards[piece.rot].board[piece.position.x];
+                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
                         if (col & (1 << (piece.position.y - 1)))
                         {
                             down = true;
@@ -900,7 +900,7 @@ namespace Shaktris {
 					}
 					else
 					{
-						const auto col = board.boards[piece.rot].board[piece.position.x];
+						const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
 						if (col & (1 << (piece.position.y + 1)))
 						{
 							up = true;
@@ -915,7 +915,7 @@ namespace Shaktris {
                 while (!open_nodes.empty()) {
                     for (const auto& piece : open_nodes) {
 
-                        auto iter = to_iter(piece.position.x, piece.position.y, piece.rot);
+                        size_t iter = to_iter(piece.position.x, piece.position.y, piece.rot);
 
 
                         if(visited[iter])
@@ -924,13 +924,13 @@ namespace Shaktris {
 
                         // shift left
                         if (piece.position.x > 0) {
-                            const auto col = s_board.boards[piece.rot].board[piece.position.x - 1];
+                            const auto col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x - 1)];
                             if (!(col & (1 << piece.position.y)))
                                 next_nodes.push_back({ Coord(piece.position.x - 1, piece.position.y), piece.rot });
                         }
                         // shift right
                         if (piece.position.x < Board::width - 1) {
-                            const auto col = s_board.boards[piece.rot].board[piece.position.x + 1];
+                            const auto col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x + 1)];
                             if (!(col & (1 << piece.position.y))) {
                                 next_nodes.push_back({ Coord(piece.position.x + 1, piece.position.y), piece.rot });
                             }
@@ -938,7 +938,7 @@ namespace Shaktris {
 
                         // sonic drop
                         {
-                            auto col = s_board.boards[piece.rot].board[piece.position.x];
+                            auto col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
                             // mask out every bit that is above the current y position
                             col &= (1 << piece.position.y) - 1;
                             
@@ -964,7 +964,7 @@ namespace Shaktris {
 
                         // if is grounded push to ret
 						{
-							auto &col = s_board.boards[piece.rot].board[piece.position.x];
+							auto &col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
                             if (piece.position.y == 0 || col & (1 << (piece.position.y - 1))) {
                                 bool is_immobile_piece = is_immobile(s_board, piece);
                                 Piece p = Piece(type, (RotationDirection)piece.rot, piece.position, is_immobile_piece ? spinType::normal : spinType::null);

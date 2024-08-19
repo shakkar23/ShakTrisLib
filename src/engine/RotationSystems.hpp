@@ -37,22 +37,22 @@ inline void srs_rotate(const Board& board,Piece& piece, TurnDirection dir) {
 
     piece.rotate(dir);
 
-    const std::array<Coord, srs_kicks>* offsets = &piece_offsets_JLSTZ[piece.rotation];
-    const std::array<Coord, srs_kicks>* prev_offsets = &piece_offsets_JLSTZ[prev_rot];
+    const std::array<Coord, srs_kicks>* offsets = &piece_offsets_JLSTZ[static_cast<size_t>(piece.rotation)];
+    const std::array<Coord, srs_kicks>* prev_offsets = &piece_offsets_JLSTZ[static_cast<size_t>(prev_rot)];
 
     if (piece.type == PieceType::I) {
-        prev_offsets = &piece_offsets_I[prev_rot];
-        offsets = &piece_offsets_I[piece.rotation];
+        prev_offsets = &piece_offsets_I[static_cast<size_t>(prev_rot)];
+        offsets = &piece_offsets_I[static_cast<size_t>(piece.rotation)];
     }
     else if (piece.type == PieceType::O) {
-        prev_offsets = &piece_offsets_O[prev_rot];
-        offsets = &piece_offsets_O[piece.rotation];
+        prev_offsets = &piece_offsets_O[static_cast<size_t>(prev_rot)];
+        offsets = &piece_offsets_O[static_cast<size_t>(piece.rotation)];
     }
 
     auto x = piece.position.x;
     auto y = piece.position.y;
 
-    for (int i = 0; i < srs_kicks; i++) {
+    for (size_t i = 0; i < srs_kicks; i++) {
         piece.position.x = x + (*prev_offsets)[i].x - (*offsets)[i].x;
         piece.position.y = y + (*prev_offsets)[i].y - (*offsets)[i].y;
         if (!Shaktris::Utility::collides(board, piece)) {
@@ -67,7 +67,7 @@ inline void srs_rotate(const Board& board,Piece& piece, TurnDirection dir) {
 
                 bool filled[4] = { true, true, true, true };
 
-                for (int u = 0; u < 4; u++) {
+                for (size_t u = 0; u < 4; u++) {
                     Coord c = corners[piece.rotation][u];
                     c.x += piece.position.x;
                     c.y += piece.position.y;
@@ -104,22 +104,22 @@ inline void srs_all_spin_rotate(const Board& board, Piece& piece, TurnDirection 
 
     piece.rotate(dir);
 
-    const std::array<Coord, srs_kicks>* offsets = &piece_offsets_JLSTZ[piece.rotation];
-    const std::array<Coord, srs_kicks>* prev_offsets = &piece_offsets_JLSTZ[prev_rot];
+    const std::array<Coord, srs_kicks>* offsets = &piece_offsets_JLSTZ[static_cast<size_t>(piece.rotation)];
+    const std::array<Coord, srs_kicks>* prev_offsets = &piece_offsets_JLSTZ[static_cast<size_t>(prev_rot)];
 
     if (piece.type == PieceType::I) {
-        prev_offsets = &piece_offsets_I[prev_rot];
-        offsets = &piece_offsets_I[piece.rotation];
+        prev_offsets = &piece_offsets_I[static_cast<size_t>(prev_rot)];
+        offsets = &piece_offsets_I[static_cast<size_t>(piece.rotation)];
     }
     else if (piece.type == PieceType::O) {
-        prev_offsets = &piece_offsets_O[prev_rot];
-        offsets = &piece_offsets_O[piece.rotation];
+        prev_offsets = &piece_offsets_O[static_cast<size_t>(prev_rot)];
+        offsets = &piece_offsets_O[static_cast<size_t>(piece.rotation)];
     }
 
     auto x = piece.position.x;
     auto y = piece.position.y;
 
-    for (int i = 0; i < srs_kicks; i++) {
+    for (size_t i = 0; i < srs_kicks; i++) {
         piece.position.x = x + (*prev_offsets)[i].x - (*offsets)[i].x;
         piece.position.y = y + (*prev_offsets)[i].y - (*offsets)[i].y;
         if (!Shaktris::Utility::collides(board, piece)) {
