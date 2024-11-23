@@ -279,7 +279,13 @@ namespace Shaktris {
                         open_nodes = next_nodes;
                         next_nodes.clear();
                     }
-                    if (initial_piece.type == PieceType::O)
+                    if (initial_piece.type == PieceType::O && r == 0)
+                        break;
+                    if ((
+                        initial_piece.type == PieceType::Z |
+                        initial_piece.type == PieceType::S |
+                        initial_piece.type == PieceType::O
+                    ) && r == 0)
                         break;
                 }
 
@@ -716,7 +722,7 @@ namespace Shaktris {
             }
 
             // Movegen for a convex board with free movement at the top. (decided by board height of 16 or lower)
-            inline SmearedBoard convex_movegen(const Board& board, PieceType type) {
+            inline SmearedBoard convex_movegen(const Board& board, const PieceType type) {
                 SmearedBoard ret{};
                 const SmearedBoard smeared_board = smear(board, type);
                 for (size_t b_index = 0; b_index < smeared_board.boards.size(); ++b_index) {
@@ -730,7 +736,14 @@ namespace Shaktris {
                         auto height = (sizeof(column_t) * CHAR_BIT) - std::countl_zero(s_board.board[x]);
                         ret.boards[b_index].board[x] = (!cond) * (1 << height); // set the column to the height
                     }
-                    if (type == PieceType::O) {
+                    if (type == PieceType::O && b_index == 0) {
+                        break;
+                    }
+                    if((
+                        type == PieceType::I |
+                        type == PieceType::Z |
+                        type == PieceType::S
+                        ) && b_index == 1) {
                         break;
                     }
                 }
