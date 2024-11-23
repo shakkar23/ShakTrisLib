@@ -41,6 +41,7 @@ static Nodes perft(Board& board, const Piece& move, const std::array<PieceType, 
     Nodes nodes = 0;
 
     board.set(move);
+    board.clearLines();
     for (auto& move : god_movegen(board, queue[i]))
         nodes += perft(board, move, queue, i + 1, depth - 1);
     board.unset(move);
@@ -48,6 +49,7 @@ static Nodes perft(Board& board, const Piece& move, const std::array<PieceType, 
 
     return nodes;
 }
+
 template <std::size_t N>
 static Nodes perft(Board& board, const std::array<PieceType, N>& queue, int depth) {
     using namespace Shaktris::MoveGen::Smeared;
@@ -84,8 +86,7 @@ int main() {
 
     std::cout << "depth: " << depth << std::endl;
     std::cout << "number of nodes: " << nodes << std::endl;
-    std::cout << "time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - now).count() / 1'000'000'000.0 << "s" << std::endl;
-    std::cout << "nodes per second: " << nodes / (std::chrono::duration_cast<std::chrono::nanoseconds>(end - now).count() / 1'000'000'000.0) << std::endl;
+    std::cout << "time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - now).count() / 1'000'000'000 << "s" << std::endl;
 
     using namespace std::chrono;
     // Example: Zero duration
@@ -99,8 +100,8 @@ int main() {
     auto milliseconds = duration_cast<std::chrono::milliseconds>(duration);
 
     // Print the formatted duration
-    std::cout << std::setw(1) << minutes.count() << "m"
-              << std::setw(1) << seconds.count() << "s"
+    std::cout << std::setw(1) << minutes.count() << "m "
+              << std::setw(1) << seconds.count() << "s "
               << std::setw(1) << milliseconds.count() << "ms" << std::endl;
 
     // Board board;
