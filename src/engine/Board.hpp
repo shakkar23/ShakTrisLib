@@ -6,8 +6,8 @@
 #include <cstdint>
 #include <limits>
 
+#include "../util/pext.hpp"
 #include "Piece.hpp"
-#include "util/pext.hpp"
 
 class Board {
 public:
@@ -51,7 +51,13 @@ public:
         }
     }
 
-
+    constexpr inline void unset(const Piece& piece) {
+        for (const Coord& mino : piece.minos) {
+            unset(
+                (size_t)mino.x + piece.position.x,
+                (size_t)mino.y + piece.position.y);
+        }
+    }
 
     constexpr inline int clearLines() {
         column_t mask = UINT32_MAX;

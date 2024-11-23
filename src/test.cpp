@@ -1,10 +1,10 @@
+#include <chrono>
+#include <iomanip>  // for std::setw and std::setfill
+#include <iostream>
+#include <numeric>
+
 #include "engine/Board.hpp"
 #include "engine/MoveGen.hpp"
-
-
-#include <iostream>
-#include <chrono>
-#include <numeric>
 
 char rot_to_char(RotationDirection rot) {
 	switch (rot) {
@@ -19,54 +19,89 @@ char rot_to_char(RotationDirection rot) {
 	}
 	return 'X';
 }
+void print_board(const Board& board) {
+    for (int y = Board::visual_height - 1; y >= 0; y--) {
+        for (size_t x = 0; x < Board::width; x++) {
+            std::cout << board.get(x, y);
+        }
+        std::cout << std::endl;
+    }
+}
 
+using Nodes = int64_t;
 
-static uint64_t perft(Board board, Piece move, const std::vector<Piece> &queue, int i, int depth) {
+template <std::size_t N>
+static Nodes perft(Board& board, const Piece& move, const std::array<PieceType, N>& queue, int i, int depth) {
+    using namespace Shaktris::MoveGen::Smeared;
+
+    if (depth <= 1){
+        return god_movegen(board, queue[i]).size();
+    }
+
+    Nodes nodes = 0;
+
     board.set(move);
-
-    if (depth <= 1) {
-        return Shaktris::MoveGen::Smeared::god_movegen(board, queue[i].type).size();
-    }
-
-    uint64_t nodes = 0;
-
-    for (auto& move : Shaktris::MoveGen::Smeared::god_movegen(board, queue[i].type)) {
+    for (auto& move : god_movegen(board, queue[i]))
         nodes += perft(board, move, queue, i + 1, depth - 1);
-    }
+    board.unset(move);
+
+
     return nodes;
 }
+template <std::size_t N>
+static Nodes perft(Board& board, const std::array<PieceType, N>& queue, int depth) {
+    using namespace Shaktris::MoveGen::Smeared;
 
-static uint64_t perft(Board board, const std::vector<Piece>& queue, int depth) {
-    if (depth <= 1) {
-        return Shaktris::MoveGen::Smeared::god_movegen(board, queue[0].type).size();
-    }
+    if (depth <= 1)
+        return god_movegen(board, queue[0]).size();
 
-    uint64_t nodes = 0;
+    Nodes nodes = 0;
 
-    for (auto& move : Shaktris::MoveGen::Smeared::god_movegen(board, queue[0].type)) {
+    for (auto& move : god_movegen(board, queue[0]))
         nodes += perft(board, move, queue, 1, depth - 1);
-    }
+
     return nodes;
 }
+
 int main() {
-    std::vector<Piece> queue {
+    constexpr int depth = 7;
+
+    std::array<PieceType, 7> queue {
         // IOTLJSZ
-        Piece(PieceType::I),
-        Piece(PieceType::O),
-        Piece(PieceType::T),
-        Piece(PieceType::L),
-        Piece(PieceType::J),
-        Piece(PieceType::S),
-        Piece(PieceType::Z)
+        PieceType::I,
+        PieceType::O,
+        PieceType::T,
+        PieceType::L,
+        PieceType::J,
+        PieceType::S,
+        PieceType::Z
     };
 
-    auto now = std::chrono::high_resolution_clock::now();
-    uint64_t nodes = perft(Board(), queue, 7);
-    auto end = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    Board board;
+    uint64_t nodes = perft(board, queue, depth);
+    auto end = std::chrono::steady_clock::now();
 
+    std::cout << "depth: " << depth << std::endl;
     std::cout << "number of nodes: " << nodes << std::endl;
-    std::cout << "time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - now).count() << "ms" << std::endl;
-    std::cout << "nodes per second: " << nodes / (std::chrono::duration_cast<std::chrono::milliseconds>(end - now).count() / 1000.0) << std::endl;
+    std::cout << "time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - now).count() / 1'000'000'000.0 << "s" << std::endl;
+    std::cout << "nodes per second: " << nodes / (std::chrono::duration_cast<std::chrono::nanoseconds>(end - now).count() / 1'000'000'000.0) << std::endl;
+
+    using namespace std::chrono;
+    // Example: Zero duration
+    auto duration = end - now;  // or: milliseconds{0}, seconds{0}, etc.
+
+    // Extract the components
+    auto minutes = duration_cast<std::chrono::minutes>(duration);
+    duration -= minutes;
+    auto seconds = duration_cast<std::chrono::seconds>(duration);
+    duration -= seconds;
+    auto milliseconds = duration_cast<std::chrono::milliseconds>(duration);
+
+    // Print the formatted duration
+    std::cout << std::setw(1) << minutes.count() << "m"
+              << std::setw(1) << seconds.count() << "s"
+              << std::setw(1) << milliseconds.count() << "ms" << std::endl;
 
     // Board board;
 
