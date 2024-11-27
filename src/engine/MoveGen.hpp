@@ -860,65 +860,7 @@ namespace Shaktris {
                 auto to_iter = [&](u8 x, u8 y, u8 r) {
                     return r + x * 4 + y * 4 * 10;
                 };
-                auto is_immobile = [](const SmearedBoard& board, const SmearedPiece& piece) {
-                    bool left = false;
-                    bool right = false;
-                    bool down = false;
-                    bool up = false;
-                    if (piece.position.x == 0)
-                    {
-                        left = true;
-                    }
-                    else
-                    {
-                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x - 1)];
-                        if (col & (1 << piece.position.y))
-                        {
-                            left = true;
-                        }
-                    }
-
-                    if (piece.position.x == Board::width - 1)
-                    {
-                        right = true;
-                    }
-                    else
-                    {
-                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x + 1)];
-                        if (col & (1 << piece.position.y))
-                        {
-                            right = true;
-                        }
-                    }
-                    
-                    if (piece.position.y == 0)
-					{
-						down = true;
-					}
-                    else
-                    {
-                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
-                        if (col & (1 << (piece.position.y - 1)))
-                        {
-                            down = true;
-                        }
-                    }
-
-                    if (piece.position.y == Board::height - 1)
-                    {
-                        up = true;
-					}
-					else
-					{
-						const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
-						if (col & (1 << (piece.position.y + 1)))
-						{
-							up = true;
-						}
-                    }
-
-                    return left && right && down && up;
-                    };
+                auto is_immobile = false;
 
                 open_nodes.push_back({ Coord(4, 19), 0 });
 
@@ -929,7 +871,7 @@ namespace Shaktris {
 
 
                         if(visited[iter])
-							continue;
+				continue;
                         visited[iter] = true;
 
                         // shift left
@@ -976,7 +918,7 @@ namespace Shaktris {
 						{
 							auto &col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
                             if (piece.position.y == 0 || col & (1 << (piece.position.y - 1))) {
-                                bool is_immobile_piece = is_immobile(s_board, piece);
+                                bool is_immobile_piece = false;
                                 Piece p = Piece(type, (RotationDirection)piece.rot, piece.position, is_immobile_piece ? spinType::normal : spinType::null);
 								ret.push_back(p);
 							}
@@ -985,11 +927,6 @@ namespace Shaktris {
                     open_nodes = next_nodes;
                     next_nodes.clear();
                 }
-
-                // go through all pieces and check if they are grounded
-
-                // check which pieces are immobile all spin
-
 
                 return ret;
 
