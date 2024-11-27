@@ -83,7 +83,7 @@ static Nodes perft(Board& board, const std::array<PieceType, N>& queue, int dept
     Nodes nodes = 0;
 
     for (auto& move : god_movegen(board, queue[0]))
-        nodes += perft(board, move, queue, depth - 1);
+        nodes += perft(board, queue, depth - 1);
 
     return nodes;
 }
