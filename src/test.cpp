@@ -64,7 +64,7 @@ static Nodes perft(Board& board, const std::array<PieceType, N>& queue, int dept
 }
 
 int main() {
-    constexpr int depth = 7;
+    constexpr int depth = 6;
 
     std::array<PieceType, 7> queue {
         // IOTLJSZ
