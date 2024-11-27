@@ -31,7 +31,7 @@ void print_board(const Board& board) {
 using Nodes = int64_t;
 
 template <std::size_t N>
-static Nodes perft(Board& board, const Piece& move, const std::array<PieceType, N>& queue, int i, int depth) {
+static Nodes perft(Board board, const Piece& move, const std::array<PieceType, N>& queue, int i, int depth) {
     using namespace Shaktris::MoveGen::Smeared;
 
     if (depth <= 1){
@@ -44,8 +44,6 @@ static Nodes perft(Board& board, const Piece& move, const std::array<PieceType, 
     board.clearLines();
     for (auto& move : god_movegen(board, queue[i]))
         nodes += perft(board, move, queue, i + 1, depth - 1);
-    board.unset(move);
-
 
     return nodes;
 }
