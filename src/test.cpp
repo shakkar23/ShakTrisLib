@@ -60,14 +60,14 @@ static Nodes perft(Board board, const Piece& move, const std::array<PieceType, N
     using namespace Shaktris::MoveGen::Smeared;
 
     if (depth <= 1){
-        return god_movegen(board, queue[i]).size();
+        return movegen(board, queue[i]).size();
     }
 
     Nodes nodes = 0;
 
     board.set(move);
     board.clearLines();
-    for (auto& move : god_movegen(board, queue[i]))
+    for (auto& move : movegen(board, queue[i]))
         nodes += perft(board, move, queue, i + 1, depth - 1);
 
     return nodes;
