@@ -485,12 +485,6 @@ namespace Shaktris {
                     left_rotating_set.rotate_left();
                     right_rotating_set.rotate_right();
 
-                    ret |= left_rotating_set;
-                    ret |= right_rotating_set;
-
-                    this->non_collides(ret);
-
-                    return ret;
 
                     std::array<Coord, 4> rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
 
@@ -775,7 +769,7 @@ namespace Shaktris {
             }
 
             inline std::vector<Piece> movegen(const Board& board, PieceType type) {
-                if (true) {
+                if (board.is_convex()) {
                     return moves_to_vec(convex_movegen(board, type), type);
                 }
 
