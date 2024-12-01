@@ -16,6 +16,8 @@
 #include "Utility.hpp"
 #include <immintrin.h>
 
+#include <cstring>
+
 // precomputed piece movements
 
 /// <summary>
@@ -386,7 +388,7 @@ namespace Shaktris {
         namespace Smeared {
 
 
-            column_t drop_column(column_t c) {
+            inline column_t drop_column(column_t c) {
                 return c | (c - (c & -c));
             }
 
@@ -409,6 +411,7 @@ namespace Shaktris {
 
                     return !ret;
                 bool operator==(const SmearedBoard& other) const {
+                inline bool operator==(const SmearedBoard& other) const {
                     return boards == other.boards; // std::array's == compares all elements
                 }
 

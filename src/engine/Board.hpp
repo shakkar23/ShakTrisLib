@@ -28,7 +28,7 @@ public:
     Board& operator=(const Board& other) = default;
 
 
-    bool operator==(const Board& other) const {
+    constexpr inline bool operator==(const Board& other) const {
         return board == other.board; // Compare all elements in the array
     }
 
