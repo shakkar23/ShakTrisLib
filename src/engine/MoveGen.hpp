@@ -827,7 +827,7 @@ namespace Shaktris {
             }
 
             inline std::vector<Piece> movegen(const Board& board, PieceType type) {
-                if (board.surface_convex()) {
+                if (true) {
                     return moves_to_vec(convex_movegen(board, type), type);
                 }
 
