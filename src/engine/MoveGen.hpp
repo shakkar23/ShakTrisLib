@@ -474,6 +474,7 @@ namespace Shaktris {
                         prev_offsets = &piece_offsets_I;
                     }
                     else if (type == PieceType::O) {
+                        return ret;
                         offsets = &piece_offsets_O;
                         prev_offsets = &piece_offsets_O;
                     }
@@ -509,6 +510,9 @@ namespace Shaktris {
                             // get rid of pieces that didn't collide
                             this->collides(right_rotating_set);
                         }
+                        else {
+                            break;
+                        }
                     }
 
                     rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
@@ -536,6 +540,9 @@ namespace Shaktris {
 
                             // get rid of pieces that didn't collide
                             this->collides(left_rotating_set);
+                        }
+                        else {
+                            break;
                         }
                     }
 
@@ -583,19 +590,13 @@ namespace Shaktris {
                     for (size_t rot = 0; rot < 4; ++rot) {
                         i8 dx = offsets[rot].x;
                         i8 dy = offsets[rot].y;
-                        Board& current_smear = this->boards[rot];
-                        Board tmp_board = boards[rot];
 
                         // shift the board up or down depending on the mino location (-y)
                         for (size_t i = 0; i < Board::width; ++i) {
-                            auto& tmp_col = tmp_board.board[i];
-                            auto real_col = boards[rot].board[i];
                             if (dy > 0)
-                                real_col |= real_col << dy;
+                                this->boards[rot].board[i] <<= dy;
                             else if (dy < 0)
-                                real_col |= real_col >> -dy;
-
-                            tmp_col |= real_col;
+                                this->boards[rot].board[i] >>= -dy;
                         }
 
                         offset_horizontal(dx);
