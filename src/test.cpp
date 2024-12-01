@@ -81,9 +81,9 @@ void Citrus() {
             auto m = Shaktris::MoveGen::Smeared::god_movegen(b, queue[t]);
 
             for (int i = 0; i < count; ++i) {
-                auto time_start = chrono::system_clock::now();
-                auto m = Shaktris::MoveGen::Smeared::god_movegen(b, queue[t]);
-                auto time_stop = chrono::system_clock::now();
+                auto time_start = chrono::high_resolution_clock::now();
+                auto m = Shaktris::MoveGen::Smeared::convex_movegen(b, queue[t]);
+                auto time_stop = chrono::high_resolution_clock::now();
 
                 auto dt = chrono::duration_cast<chrono::nanoseconds>(time_stop - time_start).count();
 
