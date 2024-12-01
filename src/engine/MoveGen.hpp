@@ -17,6 +17,7 @@
 #include <immintrin.h>
 
 #include <cstring>
+#include <cassert>
 
 // precomputed piece movements
 
@@ -388,8 +389,12 @@ namespace Shaktris {
         namespace Smeared {
 
 
-            inline column_t drop_column(column_t c) {
+            inline column_t drop_first(column_t c) {
                 return c | (c - (c & -c));
+            }
+
+            inline column_t drop_last(column_t c) {
+                return c | (c & -c - 1);
             }
 
             struct SmearedBoard {
@@ -472,7 +477,7 @@ namespace Shaktris {
                 // the this is the board
                 inline SmearedBoard rotate_srs(const SmearedBoard& pieces, PieceType type) const {
 
-                    SmearedBoard ret;
+                    SmearedBoard ret{};
 
                     const auto* offsets = &piece_offsets_JLSTZ;
                     const auto* prev_offsets = &piece_offsets_JLSTZ;
@@ -492,7 +497,6 @@ namespace Shaktris {
                     left_rotating_set.rotate_left();
                     right_rotating_set.rotate_right();
 
-
                     std::array<Coord, 4> rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
 
                     // right srs
@@ -500,13 +504,13 @@ namespace Shaktris {
 
                         rot_offsets[0].x = (*prev_offsets)[3][srs_i].x - (*offsets)[0][srs_i].x - rot_offsets[0].x;
                         rot_offsets[0].y = (*prev_offsets)[3][srs_i].y - (*offsets)[0][srs_i].y - rot_offsets[0].y;
-
+                                                                       
                         rot_offsets[1].x = (*prev_offsets)[0][srs_i].x - (*offsets)[1][srs_i].x - rot_offsets[1].x;
                         rot_offsets[1].y = (*prev_offsets)[0][srs_i].y - (*offsets)[1][srs_i].y - rot_offsets[1].y;
-
+                                                                       
                         rot_offsets[2].x = (*prev_offsets)[1][srs_i].x - (*offsets)[2][srs_i].x - rot_offsets[2].x;
                         rot_offsets[2].y = (*prev_offsets)[1][srs_i].y - (*offsets)[2][srs_i].y - rot_offsets[2].y;
-
+                                                                       
                         rot_offsets[3].x = (*prev_offsets)[2][srs_i].x - (*offsets)[3][srs_i].x - rot_offsets[3].x;
                         rot_offsets[3].y = (*prev_offsets)[2][srs_i].y - (*offsets)[3][srs_i].y - rot_offsets[3].y;
 
@@ -518,9 +522,6 @@ namespace Shaktris {
                             // get rid of pieces that didn't collide
                             this->collides(right_rotating_set);
                         }
-                        else {
-                            break;
-                        }
                     }
 
                     rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
@@ -531,13 +532,13 @@ namespace Shaktris {
 
                         rot_offsets[0].x = (*prev_offsets)[1][srs_i].x - (*offsets)[0][srs_i].x - rot_offsets[0].x;
                         rot_offsets[0].y = (*prev_offsets)[1][srs_i].y - (*offsets)[0][srs_i].y - rot_offsets[0].y;
-
+                                                                       
                         rot_offsets[1].x = (*prev_offsets)[2][srs_i].x - (*offsets)[1][srs_i].x - rot_offsets[1].x;
                         rot_offsets[1].y = (*prev_offsets)[2][srs_i].y - (*offsets)[1][srs_i].y - rot_offsets[1].y;
-
+                                                                       
                         rot_offsets[2].x = (*prev_offsets)[3][srs_i].x - (*offsets)[2][srs_i].x - rot_offsets[2].x;
                         rot_offsets[2].y = (*prev_offsets)[3][srs_i].y - (*offsets)[2][srs_i].y - rot_offsets[2].y;
-
+                                                                       
                         rot_offsets[3].x = (*prev_offsets)[0][srs_i].x - (*offsets)[3][srs_i].x - rot_offsets[3].x;
                         rot_offsets[3].y = (*prev_offsets)[0][srs_i].y - (*offsets)[3][srs_i].y - rot_offsets[3].y;
 
@@ -548,9 +549,6 @@ namespace Shaktris {
 
                             // get rid of pieces that didn't collide
                             this->collides(left_rotating_set);
-                        }
-                        else {
-                            break;
                         }
                     }
 
@@ -622,7 +620,7 @@ namespace Shaktris {
                     // pseudo code
                     // piece |= (piece >> 1) & ~column
 
-                    SmearedBoard ret;
+                    SmearedBoard ret{};
 
                     for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
                         auto& board = this->boards[b_index];
@@ -630,7 +628,10 @@ namespace Shaktris {
 
                         for (size_t x = 0; x < Board::width; x++) {
                             auto piece_col = piece.board[x];
-                            ret.boards[b_index].board[x] = drop_column(piece_col) & ~drop_column(board.board[x]);
+                            for (int n = 0; n < 10; n++) {
+                                piece_col |= (piece_col >> 1) & ~board.board[x];
+                            }
+                            ret.boards[b_index].board[x] = piece_col;
                         }
                     }
 
