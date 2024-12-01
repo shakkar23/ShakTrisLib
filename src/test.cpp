@@ -2,71 +2,36 @@
 #include <iomanip>  // for std::setw and std::setfill
 #include <iostream>
 #include <numeric>
+#include <cmath>
 
 #include "engine/Board.hpp"
 #include "engine/MoveGen.hpp"
 
-char rot_to_char(RotationDirection rot) {
-	switch (rot) {
-	case RotationDirection::North:
-		return 'N';
-	case RotationDirection::East:
-		return 'E';
-	case RotationDirection::South:
-		return 'S';
-	case RotationDirection::West:
-		return 'W';
-	}
-	return 'X';
-}
-void print_board(const Board& board) {
-    for (int y = Board::visual_height - 1; y >= 0; y--) {
-        for (size_t x = 0; x < Board::width; x++) {
-            std::cout << board.get(x, y);
-        }
-        std::cout << std::endl;
+char to_char(PieceType p) {
+    switch (p)
+    {
+    case PieceType::I:
+        return 'I';
+    case PieceType::O:
+        return 'O';
+    case PieceType::T:
+        return 'T';
+    case PieceType::L:
+        return 'L';
+    case PieceType::J:
+        return 'J';
+    case PieceType::S:
+        return 'S';
+    case PieceType::Z:
+        return 'Z';
+    default:
+        break;
     }
-}
-
-using Nodes = int64_t;
-
-template <std::size_t N>
-static Nodes perft(Board board, const Piece& move, const std::array<PieceType, N>& queue, int i, int depth) {
-    using namespace Shaktris::MoveGen::Smeared;
-
-    if (depth <= 1){
-        return god_movegen(board, queue[i]).size();
-    }
-
-    Nodes nodes = 0;
-
-    board.set(move);
-    board.clearLines();
-    for (auto& move : god_movegen(board, queue[i]))
-        nodes += perft(board, move, queue, i + 1, depth - 1);
-
-    return nodes;
-}
-
-template <std::size_t N>
-static Nodes perft(Board& board, const std::array<PieceType, N>& queue, int depth) {
-    using namespace Shaktris::MoveGen::Smeared;
-
-    if (depth <= 1)
-        return god_movegen(board, queue[0]).size();
-
-    Nodes nodes = 0;
-
-    for (auto& move : god_movegen(board, queue[0]))
-        nodes += perft(board, queue, depth - 1);
-
-    return nodes;
-}
+};
 
 int main() {
-    constexpr int depth = 7;
 
-    std::array<PieceType, 7> queue {
+    std::array<PieceType, 7> queue{
         // IOTLJSZ
         PieceType::I,
         PieceType::O,
@@ -77,102 +42,95 @@ int main() {
         PieceType::Z
     };
 
-    auto now = std::chrono::steady_clock::now();
+    using namespace std;
+
     Board board;
-    uint64_t nodes = perft(board, queue, depth);
-    auto end = std::chrono::steady_clock::now();
 
-    std::cout << "depth: " << depth << std::endl;
-    std::cout << "number of nodes: " << nodes << std::endl;
-    std::cout << "time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - now).count() / 1'000'000'000 << "s" << std::endl;
+    auto func = [&](Board b) {
+        const int count = 1000000;
 
-    using namespace std::chrono;
-    // Example: Zero duration
-    auto duration = end - now;  // or: milliseconds{0}, seconds{0}, etc.
+        // For each piece
+        for (i8 t = 0; t < 7; ++t) {
+            int64_t time = 0;
+            int64_t c = 0;
 
-    // Extract the components
-    auto minutes = duration_cast<std::chrono::minutes>(duration);
-    duration -= minutes;
-    auto seconds = duration_cast<std::chrono::seconds>(duration);
-    duration -= seconds;
-    auto milliseconds = duration_cast<std::chrono::milliseconds>(duration);
+            std::vector<int64_t> lists;
+            lists.reserve(1000000);
 
-    // Print the formatted duration
-    std::cout << std::setw(1) << minutes.count() << "m "
-              << std::setw(1) << seconds.count() << "s "
-              << std::setw(1) << milliseconds.count() << "ms" << std::endl;
+            for (int i = 0; i < count; ++i) {
+                auto time_start = chrono::high_resolution_clock::now();
+                auto m = Shaktris::MoveGen::Smeared::movegen(b, queue[t]);
+                auto time_stop = chrono::high_resolution_clock::now();
 
-    // Board board;
+                auto dt = chrono::duration_cast<chrono::nanoseconds>(time_stop - time_start).count();
 
-    // Piece piece = PieceType::J;
-
-    // Shaktris::Utility::sonic_drop(board, piece);
-    // board.set(piece);
-    // piece.position.y += 5;
-    // piece.position.x += 2;
-    // //board.set(piece);
-
-    // //std::cout << std::bitset<32>(4294967295).count() << std::endl;
-    // //return 0;
-    // std::vector<Piece> moves;
-    // constexpr auto count = 25'000'000;
-
-    // auto start = std::chrono::steady_clock::now();
-    // for (int i = 0; i < count; ++i) {
-    // 	moves = Shaktris::MoveGen::Smeared::god_movegen(board, piece.type);
-    // }
-    // auto end = std::chrono::steady_clock::now();
-    // // print the amount of functions calls we can do in one second
-    // auto time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-    // double s = count / (time / 1e+9);
-    // std::cout << "time: " << s << std::endl;
-
-    // // print moves variable
-    // std::cout << "number of moves: " << moves.size() << std::endl;
-    // for (auto& move : moves) {
-    // 	// if you cant find the move in real_moves print
-    // 	std::cout << "type: " << (int)move.type << " x: " << (int)move.position.x << " y: " << (int)move.position.y << " rotation: " << rot_to_char(move.rotation) << std::endl;
-    // }
-    // auto real_moves = Shaktris::MoveGen::Traditional::movegen(srs_rotate,board, piece.type);
-
-    // // print the number of moves
-
-    // std::cout << "number of real moves: " << real_moves.size() << std::endl;
-    // for (auto& move : real_moves) {
-    // 	//std::cout << "type: " << (int)move.type << " x: " << (int)move.position.x << " y: " << (int)move.position.y << " rotation: " << rot_to_char(move.rotation) << std::endl;
-    // }
-
-    /*
-    // print the smeared board
-    for(int b = 0; b < 4; b++) {
-            std::cout << std::array{ "north", "east", "south", "west" } [b] << std::endl;
-            for (int y = Board::visual_height - 1; y >= 0; y--) {
-                    for (size_t x = 0; x < Board::width; x++) {
-                            std::cout << smeared.boards[b].get(x, y);
-                    }
-                    std::cout << std::endl;
+                c += m.size();
+                time += dt;
+                lists.push_back(dt);
             }
 
-            std::cout << std::endl;
-            std::cout << std::endl;
-    }
-    std::cout << std::endl;
-    std::cout << std::endl;
+            // Calculate mean time & movegen count
+            time = time / count;
+            c = c / count;
 
-    // print the normal board
-    for (int y = Board::visual_height - 1; y >= 0; y--) {
-            for (size_t x = 0; x < Board::width; x++) {
-                    std::cout << board.get(x, y);
+            // Calculate stdev
+            uint64_t sd = 0;
+            uint64_t max = 0;
+            uint64_t min = UINT64_MAX;
+
+            for (auto dt : lists) {
+                sd += (dt - time) * (dt - time);
+                max = std::max(max, uint64_t(dt));
+                min = std::min(min, uint64_t(dt));
             }
-            std::cout << std::endl;
-    }
-    auto def = rot_piece_def[static_cast<size_t>(2)][static_cast<size_t>(PieceType::T)];
-    // print the piece def
 
-    for (int i = 0; i < 4; i++) {
-            std::cout << (int)def[i].x << " " << (int)def[i].y << std::endl;
-            std::cout << std::endl;
-    } */
+            sd = sd / count;
+
+            cout << "    piece: " << to_char(queue[t]) << "    time: " << time << " ns" << "    stdev: " << std::sqrt(sd) << "    min: " << min << " ns" << "    max: " << max << " ns" << "    count: " << c << endl;
+        }
+        };
+
+    board.board[9] = 0b00111111;
+    board.board[8] = 0b00111111;
+    board.board[7] = 0b00011111;
+    board.board[6] = 0b00000111;
+    board.board[5] = 0b00000001;
+    board.board[4] = 0b00000000;
+    board.board[3] = 0b00001101;
+    board.board[2] = 0b00011111;
+    board.board[1] = 0b00111111;
+    board.board[0] = 0b11111111;
+
+    cout << "BOARD TSPIN" << endl;
+    func(board);
+
+    board.board[9] = 0b111111111;
+    board.board[8] = 0b111111111;
+    board.board[7] = 0b011111111;
+    board.board[6] = 0b011111111;
+    board.board[5] = 0b000111111;
+    board.board[4] = 0b000100110;
+    board.board[3] = 0b010000001;
+    board.board[2] = 0b011110111;
+    board.board[1] = 0b011111111;
+    board.board[0] = 0b011111111;
+
+    cout << "BOARD DT CANNON" << endl;
+    func(board);
+
+    board.board[9] = 0b000011111111;
+    board.board[8] = 0b000011000000;
+    board.board[7] = 0b110011001100;
+    board.board[6] = 0b110011001100;
+    board.board[5] = 0b110011001100;
+    board.board[4] = 0b110011001100;
+    board.board[3] = 0b110011001100;
+    board.board[2] = 0b110000001100;
+    board.board[1] = 0b110000001100;
+    board.board[0] = 0b111111111100;
+
+    cout << "BOARD TERRIBLE" << endl;
+    func(board);
 
     return 0;
 }

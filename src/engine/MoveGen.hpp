@@ -13,6 +13,7 @@
 #include <vector>
 #include <bitset>
 #include <bit>
+#include <immintrin.h>
 
 // precomputed piece movements
 
@@ -285,7 +286,7 @@ namespace Shaktris {
                         initial_piece.type == PieceType::Z |
                         initial_piece.type == PieceType::S |
                         initial_piece.type == PieceType::O
-                    ) && r == 0)
+                        ) && r == 0)
                         break;
                 }
 
@@ -386,8 +387,17 @@ namespace Shaktris {
 
         namespace Smeared {
 
+
+            column_t drop_column(column_t c) {
+                return c | (c - (c & -c));
+            }
+
             struct SmearedBoard {
                 std::array<Board, 4> boards; // 0 => north, etc
+
+                bool operator==(const SmearedBoard& other) const {
+                    return boards == other.boards; // std::array's == compares all elements
+                }
 
                 // shift both left and right
                 inline SmearedBoard shift() const {
@@ -431,11 +441,22 @@ namespace Shaktris {
                             pieces.boards[b_index].board[x] = piece.board[x] & ~board.board[x];
                         }
                     }
+                }
 
+                inline void collides(SmearedBoard& pieces)const {
+
+                    for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
+                        const auto& board = boards[b_index];
+                        const auto& piece = pieces.boards[b_index];
+                        for (size_t x = 0; x < Board::width; x++) {
+                            pieces.boards[b_index].board[x] = piece.board[x] & board.board[x];
+                        }
+                    }
                 }
 
                 // the this is the board
                 inline SmearedBoard rotate_srs(const SmearedBoard& pieces, PieceType type) const {
+
                     SmearedBoard ret;
 
                     const auto* offsets = &piece_offsets_JLSTZ;
@@ -453,106 +474,108 @@ namespace Shaktris {
                     SmearedBoard left_rotating_set = pieces;
                     SmearedBoard right_rotating_set = pieces;
 
-                    // for every piece offset
+                    left_rotating_set.rotate_left();
+                    right_rotating_set.rotate_right();
+
+
+                    std::array<Coord, 4> rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
+
+                    // right srs
                     for (size_t srs_i = 0; srs_i < srs_kicks; srs_i++) {
 
-                        std::array<Coord, 4> rot_offsets;
-                        rot_offsets[0].x = (*prev_offsets)[3][srs_i].x - (*offsets)[0][srs_i].x;
-                        rot_offsets[0].y = (*prev_offsets)[3][srs_i].y - (*offsets)[0][srs_i].y;
+                        rot_offsets[0].x = (*prev_offsets)[3][srs_i].x - (*offsets)[0][srs_i].x - rot_offsets[0].x;
+                        rot_offsets[0].y = (*prev_offsets)[3][srs_i].y - (*offsets)[0][srs_i].y - rot_offsets[0].y;
 
-                        rot_offsets[1].x = (*prev_offsets)[0][srs_i].x - (*offsets)[1][srs_i].x;
-                        rot_offsets[1].y = (*prev_offsets)[0][srs_i].y - (*offsets)[1][srs_i].y;
+                        rot_offsets[1].x = (*prev_offsets)[0][srs_i].x - (*offsets)[1][srs_i].x - rot_offsets[1].x;
+                        rot_offsets[1].y = (*prev_offsets)[0][srs_i].y - (*offsets)[1][srs_i].y - rot_offsets[1].y;
 
-                        rot_offsets[2].x = (*prev_offsets)[1][srs_i].x - (*offsets)[2][srs_i].x;
-                        rot_offsets[2].y = (*prev_offsets)[1][srs_i].y - (*offsets)[2][srs_i].y;
+                        rot_offsets[2].x = (*prev_offsets)[1][srs_i].x - (*offsets)[2][srs_i].x - rot_offsets[2].x;
+                        rot_offsets[2].y = (*prev_offsets)[1][srs_i].y - (*offsets)[2][srs_i].y - rot_offsets[2].y;
 
-                        rot_offsets[3].x = (*prev_offsets)[2][srs_i].x - (*offsets)[3][srs_i].x;
-                        rot_offsets[3].y = (*prev_offsets)[2][srs_i].y - (*offsets)[3][srs_i].y;
+                        rot_offsets[3].x = (*prev_offsets)[2][srs_i].x - (*offsets)[3][srs_i].x - rot_offsets[3].x;
+                        rot_offsets[3].y = (*prev_offsets)[2][srs_i].y - (*offsets)[3][srs_i].y - rot_offsets[3].y;
 
                         if (!right_rotating_set.empty()) {
-                            SmearedBoard tmp_set = right_rotating_set;
-                            tmp_set.rotate_right();
-                            tmp_set.offset(rot_offsets);
+                            right_rotating_set.offset(rot_offsets);
 
-                            // tmp after this line is which pieces did not collide after rotation
-                            this->non_collides(tmp_set);
+                            ret |= right_rotating_set;
 
-                            ret |= tmp_set;
-
-                            // gotta rotate back to the original position
-                            for (auto& offsets : rot_offsets) {
-                                offsets.x *= -1;
-                                offsets.y *= -1;
-                            }
-
-                            // tmp after this line is which pieces did not collide in the board space
-                            tmp_set.offset(rot_offsets);
-                            tmp_set.rotate_left();
-
-                            // the ones that are still here are the ones we keep for the next iteration
-                            right_rotating_set ^= tmp_set;
+                            // get rid of pieces that didn't collide
+                            this->collides(right_rotating_set);
                         }
-
-                        // use the rot_offsets for the other direction now
-                        rot_offsets[0].x = (*prev_offsets)[1][srs_i].x - (*offsets)[0][srs_i].x;
-                        rot_offsets[0].y = (*prev_offsets)[1][srs_i].y - (*offsets)[0][srs_i].y;
-
-                        rot_offsets[1].x = (*prev_offsets)[2][srs_i].x - (*offsets)[1][srs_i].x;
-                        rot_offsets[1].y = (*prev_offsets)[2][srs_i].y - (*offsets)[1][srs_i].y;
-
-                        rot_offsets[2].x = (*prev_offsets)[3][srs_i].x - (*offsets)[2][srs_i].x;
-                        rot_offsets[2].y = (*prev_offsets)[3][srs_i].y - (*offsets)[2][srs_i].y;
-
-                        rot_offsets[3].x = (*prev_offsets)[0][srs_i].x - (*offsets)[3][srs_i].x;
-                        rot_offsets[3].y = (*prev_offsets)[0][srs_i].y - (*offsets)[3][srs_i].y;
-
-                        if (!left_rotating_set.empty()) {
-                            SmearedBoard tmp_set = left_rotating_set;
-                            tmp_set.rotate_left();
-                            tmp_set.offset(rot_offsets);
-
-                            // tmp after this line is which pieces did not collide after rotation
-                            this->non_collides(tmp_set);
-
-                            ret |= tmp_set;
-                            // figure out which pieces do not collide by bringing them back to the original position and check if they are in the rotating pieces
-
-                            for (auto& offsets : rot_offsets) {
-                                offsets.x *= -1;
-                                offsets.y *= -1;
-                            }
-
-                            // tmp after this line is which pieces did not collide in the board space
-                            tmp_set.offset(rot_offsets);
-                            tmp_set.rotate_right();
-
-                            // the ones that are still here are the ones we keep for the next iteration
-                            left_rotating_set ^= tmp_set;
+                        else {
+                            break;
                         }
                     }
 
-                    // add the remaining pieces that did not rotate :(
-                    ret |= left_rotating_set;
-                    ret |= right_rotating_set;
+                    rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
+
+
+                    // left srs
+                    for (size_t srs_i = 0; srs_i < srs_kicks; srs_i++) {
+
+                        rot_offsets[0].x = (*prev_offsets)[1][srs_i].x - (*offsets)[0][srs_i].x - rot_offsets[0].x;
+                        rot_offsets[0].y = (*prev_offsets)[1][srs_i].y - (*offsets)[0][srs_i].y - rot_offsets[0].y;
+
+                        rot_offsets[1].x = (*prev_offsets)[2][srs_i].x - (*offsets)[1][srs_i].x - rot_offsets[1].x;
+                        rot_offsets[1].y = (*prev_offsets)[2][srs_i].y - (*offsets)[1][srs_i].y - rot_offsets[1].y;
+
+                        rot_offsets[2].x = (*prev_offsets)[3][srs_i].x - (*offsets)[2][srs_i].x - rot_offsets[2].x;
+                        rot_offsets[2].y = (*prev_offsets)[3][srs_i].y - (*offsets)[2][srs_i].y - rot_offsets[2].y;
+
+                        rot_offsets[3].x = (*prev_offsets)[0][srs_i].x - (*offsets)[3][srs_i].x - rot_offsets[3].x;
+                        rot_offsets[3].y = (*prev_offsets)[0][srs_i].y - (*offsets)[3][srs_i].y - rot_offsets[3].y;
+
+                        if (!left_rotating_set.empty()) {
+                            left_rotating_set.offset(rot_offsets);
+
+                            ret |= left_rotating_set;
+
+                            // get rid of pieces that didn't collide
+                            this->collides(left_rotating_set);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+
+                    this->non_collides(ret);
+
                     return ret;
                 }
 
                 inline void rotate_right() {
+                    if (boards.empty()) return; // Handle empty array
                     Board tmp = boards[boards.size() - 1];
 
-                    for (size_t b_index = boards.size() - 1; b_index > 0; --b_index) {
-                        boards[b_index] = boards[b_index - 1];
-                    }
+                    // Shift elements right by 1 using std::memmove
+                    std::memmove(&boards[1], &boards[0], (boards.size() - 1) * sizeof(Board));
+
                     boards[0] = tmp;
                 }
 
                 inline void rotate_left() {
+                    if (boards.empty()) return; // Handle empty array
                     Board tmp = boards[0];
 
-                    for (size_t b_index = 0; b_index < boards.size() - 1; ++b_index) {
-                        boards[b_index] = boards[b_index + 1];
-                    }
+                    // Shift elements left by 1 using std::memmove
+                    std::memmove(&boards[0], &boards[1], (boards.size() - 1) * sizeof(Board));
+
                     boards[boards.size() - 1] = tmp;
+                }
+
+                inline void offset_horizontal(int shift) {
+                    constexpr size_t board_size = sizeof(uint32_t) * 10; // Size of one `Board`
+                    constexpr size_t total_size = board_size * 4;        // Total size of `boards`
+
+                    shift = (shift % 4 + 4) % 4; // Normalize shift to [0, 3]
+                    if (shift == 0) return;     // No shift needed
+
+                    alignas(32) std::array<std::array<uint32_t, 10>, 4> temp;
+
+                    std::memcpy(temp.data(), boards.data(), shift * board_size);
+                    std::memmove(boards.data(), boards.data() + shift, (4 - shift) * board_size);
+                    std::memcpy(boards.data() + (4 - shift), temp.data(), shift * board_size);
                 }
 
                 inline void offset(const std::array<Coord, 4>& offsets) {
@@ -575,12 +598,7 @@ namespace Shaktris {
                             tmp_col |= real_col;
                         }
 
-                        for (size_t x = 1; x < Board::width - 1; ++x) {
-                            auto& smear_col = current_smear.board[x];
-                            auto& tmp_col = tmp_board.board[x + dx];
-
-                            smear_col = tmp_col;
-                        }
+                        offset_horizontal(dx);
                     }
                 }
 
@@ -597,10 +615,7 @@ namespace Shaktris {
 
                         for (size_t x = 0; x < Board::width; x++) {
                             auto piece_col = piece.board[x];
-                            for (int n = 0; n < 32; n++) {
-                                piece_col |= (piece_col >> 1) & ~board.board[x];
-                            }
-                            ret.boards[b_index].board[x] = piece_col;
+                            ret.boards[b_index].board[x] = drop_column(piece_col) & ~drop_column(board.board[x]);
                         }
                     }
 
@@ -739,7 +754,7 @@ namespace Shaktris {
                     if (type == PieceType::O && b_index == 0) {
                         break;
                     }
-                    if((
+                    if ((
                         type == PieceType::I |
                         type == PieceType::Z |
                         type == PieceType::S
@@ -755,48 +770,37 @@ namespace Shaktris {
                 if (board.is_convex()) {
                     return moves_to_vec(convex_movegen(board, type), type);
                 }
-                const SmearedBoard smeared_board = smear(board, type);
-                SmearedBoard visited{};
-                SmearedBoard open_nodes{};
-                SmearedBoard next_nodes{};
 
-                open_nodes.boards[0].board[4/* x */] = 1 << 19/* y */; // set north piece rotation to the piece position
+                const SmearedBoard s_board = smear(board, type);
 
-                for (int i = 0; i < 5; ++i) { // valid shifts put onto the next nodes
-                    open_nodes = open_nodes.shift();
-                    smeared_board.non_collides(open_nodes);
+                SmearedBoard flood_old{};
+                SmearedBoard flood_new{};
+
+                flood_new.boards[0].board[4] = 1 << 19;
+
+                while (flood_new != flood_old) {
+                    flood_old = flood_new;
+
+                    // down 
+                    flood_new |= s_board.smear_drop(flood_new);
+
+                    // left & right
+                    flood_new |= flood_new.shift();
+
+                    // rotate
+                    flood_new |= s_board.rotate_srs(flood_new, type);
+
+                    // cull
+                    s_board.non_collides(flood_new);
                 }
-                while (!open_nodes.empty()) {
-
-                    { // valid shifts put onto the next nodes
-                        SmearedBoard shifted_pieces = open_nodes.shift();
-                        smeared_board.non_collides(shifted_pieces);
-                        visited.non_collides(shifted_pieces);
-                        visited |= shifted_pieces;
-                        next_nodes |= shifted_pieces;
+                // version of grounded() that doesn't require collision checking
+                for (auto& board : flood_new.boards) {
+                    for (size_t x = 0; x < Board::width; x++) {
+                        // grounded pieces are last bits or bits followed by 0
+                        board.board[x] = (board.board[x] & ~(board.board[x] << 1)) | (board.board[x] & 1);
                     }
-
-                    { // valid rotations put onto the next nodes
-                        SmearedBoard tmp_pieces = smeared_board.rotate_srs(open_nodes, type);
-                        smeared_board.non_collides(tmp_pieces);
-                        visited.non_collides(tmp_pieces);
-                        visited |= tmp_pieces;
-                        next_nodes |= tmp_pieces;
-                    }
-
-                    { // already taken care of by smear drop
-                        SmearedBoard smeared_pieces = smeared_board.smear_drop(open_nodes);
-                        // smeared_board.non_collides(smeared_pieces);
-                        visited.non_collides(smeared_pieces);
-                        visited |= smeared_pieces;
-                        next_nodes |= smeared_pieces;
-                    }
-
-                    std::swap(open_nodes, next_nodes);
-                    next_nodes = {};
                 }
-
-                return moves_to_vec(smeared_board.grounded(visited), type);
+                return moves_to_vec(flood_new, type);
             }
 
 
@@ -859,8 +863,66 @@ namespace Shaktris {
                 std::bitset<32 * 10 * 4> visited;
                 auto to_iter = [&](u8 x, u8 y, u8 r) {
                     return r + x * 4 + y * 4 * 10;
-                };
-                auto is_immobile = false;
+                    };
+                auto is_immobile = [](const SmearedBoard& board, const SmearedPiece& piece) {
+                    bool left = false;
+                    bool right = false;
+                    bool down = false;
+                    bool up = false;
+                    if (piece.position.x == 0)
+                    {
+                        left = true;
+                    }
+                    else
+                    {
+                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x - 1)];
+                        if (col & (1 << piece.position.y))
+                        {
+                            left = true;
+                        }
+                    }
+
+                    if (piece.position.x == Board::width - 1)
+                    {
+                        right = true;
+                    }
+                    else
+                    {
+                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x + 1)];
+                        if (col & (1 << piece.position.y))
+                        {
+                            right = true;
+                        }
+                    }
+
+                    if (piece.position.y == 0)
+                    {
+                        down = true;
+                    }
+                    else
+                    {
+                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
+                        if (col & (1 << (piece.position.y - 1)))
+                        {
+                            down = true;
+                        }
+                    }
+
+                    if (piece.position.y == Board::height - 1)
+                    {
+                        up = true;
+                    }
+                    else
+                    {
+                        const auto col = board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
+                        if (col & (1 << (piece.position.y + 1)))
+                        {
+                            up = true;
+                        }
+                    }
+
+                    return left && right && down && up;
+                    };
 
                 open_nodes.push_back({ Coord(4, 19), 0 });
 
@@ -870,8 +932,8 @@ namespace Shaktris {
                         size_t iter = to_iter(piece.position.x, piece.position.y, piece.rot);
 
 
-                        if(visited[iter])
-				continue;
+                        if (visited[iter])
+                            continue;
                         visited[iter] = true;
 
                         // shift left
@@ -893,15 +955,15 @@ namespace Shaktris {
                             auto col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
                             // mask out every bit that is above the current y position
                             col &= (1 << piece.position.y) - 1;
-                            
+
                             const auto height = ((int)sizeof(column_t) * CHAR_BIT) - std::countl_zero(col);
                             next_nodes.push_back({ Coord(piece.position.x, height), piece.rot });
                         }
 
                         // rotate srs
-                        if(type != PieceType::O) {
+                        if (type != PieceType::O) {
                             SmearedPiece next_piece = piece;
-                             
+
                             srs(s_board, next_piece, type, TurnDirection::Right);
 
                             next_nodes.push_back({ next_piece });
@@ -915,18 +977,23 @@ namespace Shaktris {
                         }
 
                         // if is grounded push to ret
-						{
-							auto &col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
+                        {
+                            auto& col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
                             if (piece.position.y == 0 || col & (1 << (piece.position.y - 1))) {
-                                bool is_immobile_piece = false;
+                                bool is_immobile_piece = is_immobile(s_board, piece);
                                 Piece p = Piece(type, (RotationDirection)piece.rot, piece.position, is_immobile_piece ? spinType::normal : spinType::null);
-								ret.push_back(p);
-							}
-						}
+                                ret.push_back(p);
+                            }
+                        }
                     }
                     open_nodes = next_nodes;
                     next_nodes.clear();
                 }
+
+                // go through all pieces and check if they are grounded
+
+                // check which pieces are immobile all spin
+
 
                 return ret;
 
