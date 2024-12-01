@@ -27,6 +27,11 @@ public:
     Board(Board&& other) noexcept = default;
     Board& operator=(const Board& other) = default;
 
+
+    bool operator==(const Board& other) const {
+        return board == other.board; // Compare all elements in the array
+    }
+
     constexpr inline int get(size_t x, size_t y) const {
         return (board[x] & (1 << y)) != 0;
     }
