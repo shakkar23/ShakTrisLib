@@ -498,22 +498,29 @@ namespace Shaktris {
                     left_rotating_set.rotate_left();
                     right_rotating_set.rotate_right();
 
+                    ret |= left_rotating_set;
+                    ret |= right_rotating_set;
+
+                    this->non_collides(ret);
+
+                    return ret;
+
                     std::array<Coord, 4> rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
 
                     // right srs
                     for (size_t srs_i = 0; srs_i < srs_kicks; srs_i++) {
 
-                        rot_offsets[0].x = (*prev_offsets)[3][srs_i].x - (*offsets)[0][srs_i].x - rot_offsets[0].x;
-                        rot_offsets[0].y = (*prev_offsets)[3][srs_i].y - (*offsets)[0][srs_i].y - rot_offsets[0].y;
-                                                                       
-                        rot_offsets[1].x = (*prev_offsets)[0][srs_i].x - (*offsets)[1][srs_i].x - rot_offsets[1].x;
-                        rot_offsets[1].y = (*prev_offsets)[0][srs_i].y - (*offsets)[1][srs_i].y - rot_offsets[1].y;
-                                                                       
-                        rot_offsets[2].x = (*prev_offsets)[1][srs_i].x - (*offsets)[2][srs_i].x - rot_offsets[2].x;
-                        rot_offsets[2].y = (*prev_offsets)[1][srs_i].y - (*offsets)[2][srs_i].y - rot_offsets[2].y;
-                                                                       
-                        rot_offsets[3].x = (*prev_offsets)[2][srs_i].x - (*offsets)[3][srs_i].x - rot_offsets[3].x;
-                        rot_offsets[3].y = (*prev_offsets)[2][srs_i].y - (*offsets)[3][srs_i].y - rot_offsets[3].y;
+                        rot_offsets[0].x = (*prev_offsets)[3][srs_i].x - (*offsets)[0][srs_i].x;
+                        rot_offsets[0].y = (*prev_offsets)[3][srs_i].y - (*offsets)[0][srs_i].y;
+                                                                                               
+                        rot_offsets[1].x = (*prev_offsets)[0][srs_i].x - (*offsets)[1][srs_i].x;
+                        rot_offsets[1].y = (*prev_offsets)[0][srs_i].y - (*offsets)[1][srs_i].y;
+                                                                                               
+                        rot_offsets[2].x = (*prev_offsets)[1][srs_i].x - (*offsets)[2][srs_i].x;
+                        rot_offsets[2].y = (*prev_offsets)[1][srs_i].y - (*offsets)[2][srs_i].y;
+                                                                                               
+                        rot_offsets[3].x = (*prev_offsets)[2][srs_i].x - (*offsets)[3][srs_i].x;
+                        rot_offsets[3].y = (*prev_offsets)[2][srs_i].y - (*offsets)[3][srs_i].y;
 
                         if (!right_rotating_set.empty()) {
                             right_rotating_set.offset(rot_offsets);
@@ -534,17 +541,17 @@ namespace Shaktris {
                     // left srs
                     for (size_t srs_i = 0; srs_i < srs_kicks; srs_i++) {
 
-                        rot_offsets[0].x = (*prev_offsets)[1][srs_i].x - (*offsets)[0][srs_i].x - rot_offsets[0].x;
-                        rot_offsets[0].y = (*prev_offsets)[1][srs_i].y - (*offsets)[0][srs_i].y - rot_offsets[0].y;
-                                                                       
-                        rot_offsets[1].x = (*prev_offsets)[2][srs_i].x - (*offsets)[1][srs_i].x - rot_offsets[1].x;
-                        rot_offsets[1].y = (*prev_offsets)[2][srs_i].y - (*offsets)[1][srs_i].y - rot_offsets[1].y;
-                                                                       
-                        rot_offsets[2].x = (*prev_offsets)[3][srs_i].x - (*offsets)[2][srs_i].x - rot_offsets[2].x;
-                        rot_offsets[2].y = (*prev_offsets)[3][srs_i].y - (*offsets)[2][srs_i].y - rot_offsets[2].y;
-                                                                       
-                        rot_offsets[3].x = (*prev_offsets)[0][srs_i].x - (*offsets)[3][srs_i].x - rot_offsets[3].x;
-                        rot_offsets[3].y = (*prev_offsets)[0][srs_i].y - (*offsets)[3][srs_i].y - rot_offsets[3].y;
+                        rot_offsets[0].x = (*prev_offsets)[1][srs_i].x - (*offsets)[0][srs_i].x;
+                        rot_offsets[0].y = (*prev_offsets)[1][srs_i].y - (*offsets)[0][srs_i].y;
+                                                                                               
+                        rot_offsets[1].x = (*prev_offsets)[2][srs_i].x - (*offsets)[1][srs_i].x;
+                        rot_offsets[1].y = (*prev_offsets)[2][srs_i].y - (*offsets)[1][srs_i].y;
+                                                                                               
+                        rot_offsets[2].x = (*prev_offsets)[3][srs_i].x - (*offsets)[2][srs_i].x;
+                        rot_offsets[2].y = (*prev_offsets)[3][srs_i].y - (*offsets)[2][srs_i].y;
+                                                                                               
+                        rot_offsets[3].x = (*prev_offsets)[0][srs_i].x - (*offsets)[3][srs_i].x;
+                        rot_offsets[3].y = (*prev_offsets)[0][srs_i].y - (*offsets)[3][srs_i].y;
 
                         if (!left_rotating_set.empty()) {
                             left_rotating_set.offset(rot_offsets);
@@ -591,11 +598,8 @@ namespace Shaktris {
                     shift = (shift % 4 + 4) % 4; // Normalize shift to [0, 3]
                     if (shift == 0) return;     // No shift needed
 
-                    alignas(32) std::array<std::array<uint32_t, 10>, 4> temp;
-
-                    std::memcpy(temp.data(), boards.data(), shift * board_size);
                     std::memmove(boards.data(), boards.data() + shift, (4 - shift) * board_size);
-                    std::memcpy(boards.data() + (4 - shift), temp.data(), shift * board_size);
+                    std::memset(boards.data() + 4 - shift, 0, shift * board_size);
                 }
 
                 inline void offset(const std::array<Coord, 4>& offsets) {
