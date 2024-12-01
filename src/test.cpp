@@ -55,10 +55,10 @@ void print_board(const Board& board) {
 
 void Citrus() {
     std::array<PieceType, 7> queue{
-        // TOILJSZ
-        PieceType::T,
+        // IOTLJSZ
         PieceType::I,
         PieceType::O,
+        PieceType::T,
         PieceType::L,
         PieceType::J,
         PieceType::S,
