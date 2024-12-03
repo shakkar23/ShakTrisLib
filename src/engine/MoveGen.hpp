@@ -406,24 +406,6 @@ namespace Shaktris {
                     return boards == other.boards; // std::array's == compares all elements
                 }
 
-                bool convex(bool surface) const {
-                    bool ret = false;
-
-                    if (surface) {
-                        for (const auto& board : boards) {
-                            ret |= !board.surface_convex();
-                        }
-                    }
-                    else {
-                        for (const auto& board : boards) {
-                            ret |= !board.true_convex();
-                        }
-                    }
-
-                    return !ret;
-                }
-
-
                 // shift both left and right
                 inline SmearedBoard shift() const {
                     SmearedBoard ret = *this;
@@ -703,17 +685,8 @@ namespace Shaktris {
             };
 
             inline void deduplicate(SmearedBoard& dedup, PieceType type) {
-                if (type == PieceType::Z || type == PieceType::S) {
+                if (type == PieceType::Z || type == PieceType::S || type == PieceType::I) {
                     dedup.boards[2].zero();
-                    dedup.boards[3].zero();
-                }
-                if (type == PieceType::I) {
-                    dedup.boards[2].offset(Coord(1, 0));
-                    dedup.boards[0] |= dedup.boards[2];
-                    dedup.boards[2].zero();
-
-                    dedup.boards[3].offset(Coord(0, -1));
-                    dedup.boards[1] |= dedup.boards[3];
                     dedup.boards[3].zero();
                 }
             }
@@ -742,7 +715,8 @@ namespace Shaktris {
                 for (size_t rot = 0; rot < 4; rot++) {
                     for (const Coord& mino : rot_piece_def[rot][static_cast<size_t>(type)]) {
                         for (size_t x = 0; x < Board::width; x++) {
-                            auto c = ((x + mino.x) >= 0 && (x + mino.x) < board.board.size()) ? board.board[x + mino.x] : column_t(~0);
+                            auto cond1 = ((x + mino.x) >= 0 & (x + mino.x) < board.board.size());
+                            auto c = (cond1 * board.board[x + mino.x]) | ((!cond1) * column_t(~0));
                             bool cond = (mino.y < 0);
                             c = ((!cond) * (c >> mino.y)) | (cond * ~(~c << -mino.y));
 
