@@ -27,6 +27,11 @@ public:
     Board(Board&& other) noexcept = default;
     Board& operator=(const Board& other) = default;
 
+
+    constexpr inline bool operator==(const Board& other) const {
+        return board == other.board; // Compare all elements in the array
+    }
+
     constexpr inline int get(size_t x, size_t y) const {
         return (board[x] & (1 << y)) != 0;
     }
@@ -237,6 +242,54 @@ public:
         }
         return ret;
     };
+
+
+    constexpr void offset(const Coord offset) {
+
+        i8 dx = offset.x;
+        i8 dy = offset.y;
+        if (dy > 0) {
+            for (size_t i = 0; i < Board::width; ++i) {
+                board[i] <<= dy;
+            }
+        }
+        else if (dy < 0) {
+            for (size_t i = 0; i < Board::width; ++i) {
+                board[i] >>= -dy;
+            }
+
+        }
+        offset_horizontal(dx);
+    }
+
+    constexpr void offset_horizontal(int shift) {
+        for (size_t x = 1; x < Board::width - 1; ++x) {
+            auto& smear_col = board[x];
+            auto& tmp_col = board[x - shift];
+
+            smear_col = tmp_col;
+        }
+    }
+
+    constexpr void zero() {
+        for (size_t x = 0; x < Board::width; x++) {
+            board[x] = 0;
+        }
+    }
+
+    constexpr Board& operator|=(const Board& other) {
+        for (size_t x = 0; x < Board::width; x++) {
+            board[x] |= other.board[x];
+        }
+        return *this;
+    }
+
+    constexpr Board& operator&=(const Board& other) {
+        for (size_t x = 0; x < Board::width; x++) {
+            board[x] &= other.board[x];
+        }
+        return *this;
+    }
 
     std::array<column_t, Board::width> board;
 };
