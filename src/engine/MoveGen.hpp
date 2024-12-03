@@ -576,32 +576,10 @@ namespace Shaktris {
                     boards[boards.size() - 1] = tmp;
                 }
 
-                inline void offset_horizontal(int shift) {
-                    constexpr size_t board_size = sizeof(uint32_t) * 10; // Size of one `Board`
-                    constexpr size_t total_size = board_size * 4;        // Total size of `boards`
-
-                    shift = (shift % 4 + 4) % 4; // Normalize shift to [0, 3]
-                    if (shift == 0) return;     // No shift needed
-
-                    std::memmove(boards.data(), boards.data() + shift, (4 - shift) * board_size);
-                    std::memset(boards.data() + 4 - shift, 0, shift * board_size);
-                }
-
                 inline void offset(const std::array<Coord, 4>& offsets) {
 
                     for (size_t rot = 0; rot < 4; ++rot) {
-                        i8 dx = offsets[rot].x;
-                        i8 dy = offsets[rot].y;
-
-                        // shift the board up or down depending on the mino location (-y)
-                        for (size_t i = 0; i < Board::width; ++i) {
-                            if (dy > 0)
-                                this->boards[rot].board[i] <<= dy;
-                            else if (dy < 0)
-                                this->boards[rot].board[i] >>= -dy;
-                        }
-
-                        offset_horizontal(dx);
+                        this->boards[rot].offset(offsets[rot]);
                     }
                 }
 
@@ -618,7 +596,7 @@ namespace Shaktris {
 
                         for (size_t x = 0; x < Board::width; x++) {
                             auto piece_col = piece.board[x];
-                            for (int n = 0; n < 8; n++) {
+                            for (int n = 0; n < 1; n++) {
                                 piece_col |= (piece_col >> 1) & ~board.board[x];
                             }
                             ret.boards[b_index].board[x] = piece_col;
@@ -706,6 +684,22 @@ namespace Shaktris {
                 u8 rot;
             };
 
+            inline void deduplicate(SmearedBoard& dedup, PieceType type) {
+                if (type == PieceType::Z || type == PieceType::S) {
+                    dedup.boards[2].zero();
+                    dedup.boards[3].zero();
+                }
+                if (type == PieceType::I) {
+                    dedup.boards[2].offset(Coord(1, 0));
+                    dedup.boards[0] |= dedup.boards[2];
+                    dedup.boards[2].zero();
+
+                    dedup.boards[3].offset(Coord(0, -1));
+                    dedup.boards[1] |= dedup.boards[3];
+                    dedup.boards[3].zero();
+                }
+            }
+
             inline std::vector<Piece> moves_to_vec(const SmearedBoard& moves, PieceType type) {
                 std::vector<Piece> ret;
                 ret.reserve(150);
@@ -787,8 +781,6 @@ namespace Shaktris {
                 while (flood_new != flood_old) {
                     flood_old = flood_new;
 
-                    // down 
-                    flood_new |= s_board.smear_drop(flood_new);
 
                     // left & right
                     flood_new |= flood_new.shift();
@@ -796,9 +788,14 @@ namespace Shaktris {
                     // rotate
                     flood_new |= s_board.rotate_no_srs(flood_new, type);
 
+                    // down 
+                    flood_new |= s_board.smear_drop(flood_new);
+
                     // cull
                     s_board.non_collides(flood_new);
                 }
+
+                deduplicate(flood_new, type);
 
                 // version of grounded() that doesn't require collision checking
                 for (auto& board : flood_new.boards) {
