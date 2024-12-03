@@ -787,7 +787,7 @@ namespace Shaktris {
                 return ret;
             }
 
-            inline std::vector<Piece> movegen(const Board& board, PieceType type) {
+            inline std::vector<Piece> nosrs_movegen(const Board& board, PieceType type) {
                 // movegen without srs
 
                 if (board.is_convex()) {
@@ -842,6 +842,54 @@ namespace Shaktris {
                     }
                 }
                 return moves_to_vec(flood_new, type);
+            }
+
+            inline std::vector<Piece> movegen(const Board& board, PieceType type) {
+                if (board.surface_convex()) {
+                    return moves_to_vec(convex_movegen(board, type), type);
+                }
+                const SmearedBoard smeared_board = smear(board, type);
+                SmearedBoard visited{};
+                SmearedBoard open_nodes{};
+                SmearedBoard next_nodes{};
+
+                open_nodes.boards[0].board[4/* x */] = 1 << 19/* y */; // set north piece rotation to the piece position
+
+                for (int i = 0; i < 5; ++i) { // valid shifts put onto the next nodes
+                    open_nodes = open_nodes.shift();
+                    smeared_board.non_collides(open_nodes);
+                }
+                while (!open_nodes.empty()) {
+
+                    { // valid shifts put onto the next nodes
+                        SmearedBoard shifted_pieces = open_nodes.shift();
+                        smeared_board.non_collides(shifted_pieces);
+                        visited.non_collides(shifted_pieces);
+                        visited |= shifted_pieces;
+                        next_nodes |= shifted_pieces;
+                    }
+
+                    { // valid rotations put onto the next nodes
+                        SmearedBoard tmp_pieces = smeared_board.rotate_srs(open_nodes, type);
+                        smeared_board.non_collides(tmp_pieces);
+                        visited.non_collides(tmp_pieces);
+                        visited |= tmp_pieces;
+                        next_nodes |= tmp_pieces;
+                    }
+
+                    { // already taken care of by smear drop
+                        SmearedBoard smeared_pieces = smeared_board.smear_drop(open_nodes);
+                        // smeared_board.non_collides(smeared_pieces);
+                        visited.non_collides(smeared_pieces);
+                        visited |= smeared_pieces;
+                        next_nodes |= smeared_pieces;
+                    }
+
+                    std::swap(open_nodes, next_nodes);
+                    next_nodes = {};
+                }
+
+                return moves_to_vec(smeared_board.grounded(visited), type);
             }
 
 
