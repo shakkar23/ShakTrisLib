@@ -119,10 +119,12 @@ void Game::process_movement(Piece& piece, Movement movement) const {
 // warning! if there is a piece in the hold and the current piece is empty, we dont use the hold
 std::vector<Piece> Game::get_possible_piece_placements() const {
     // we exausted the queue
-    if (current_piece.type == PieceType::Empty)
-        return {};
+    std::vector<Piece> valid_pieces; 
+    if (current_piece.type == PieceType::Empty) {
+        return valid_pieces;
+    }
 
-    std::vector<Piece> valid_pieces = Shaktris::MoveGen::Smeared::god_movegen(board, current_piece.type);
+    valid_pieces = Shaktris::MoveGen::Smeared::god_movegen(board, current_piece.type);
 
     PieceType holdType = hold.has_value() ? hold.value() : queue.front();
     if (holdType != PieceType::Empty && holdType != current_piece.type) {

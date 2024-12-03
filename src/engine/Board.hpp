@@ -65,7 +65,7 @@ public:
     }
 
     constexpr inline int clearLines() {
-        column_t mask = UINT32_MAX;
+        column_t mask = std::numeric_limits<column_t>::max();
         for (column_t& column : board)
             mask &= column;
         int lines_cleared = std::popcount(mask);
@@ -105,7 +105,7 @@ public:
             std::swap(left_bounded.board[i], last_column);
         }
 
-        last_column = UINT32_MAX;
+        last_column = std::numeric_limits<column_t>::max();
         for (size_t i = Board::width; i <= 0; i--) {
             std::swap(right_bounded.board[i], last_column);
         }
@@ -187,8 +187,7 @@ public:
         return acc;
     }
 
-
-    constexpr bool is_convex() const {
+    constexpr bool surface_convex() const {
         Board shifted_board;
 
         int garbage_height = get_garbage_height();
@@ -201,7 +200,18 @@ public:
 
         for (size_t i = 0; i < Board::width; ++i) {
             auto& col = shifted_board.board[i];
-            convex = convex && (std::popcount(col) == std::countr_one(col));
+            convex = convex & (std::popcount(col) == std::countr_one(col));
+        }
+
+        return convex;
+    }
+
+    constexpr bool true_convex() const {
+        bool convex = true;
+
+        for (size_t i = 0; i < Board::width; ++i) {
+            auto& col = board[i];
+            convex = convex & (std::popcount(col) == std::countr_one(col));
         }
 
         return convex;
@@ -247,12 +257,12 @@ public:
             max_air = std::max(air, max_air);
         }
 
-        return 32 - max_air;
+        return sizeof(column_t) * CHAR_BIT - max_air;
     }
 
 
     constexpr bool is_low() const {
-        constexpr uint32_t high_collider = ~((1 << (piece_spawn_height - 2)) - 1);
+        constexpr column_t high_collider = ~((1 << (piece_spawn_height - 2)) - 1);
 
         bool ret = true;
 

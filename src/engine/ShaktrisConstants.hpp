@@ -3,11 +3,11 @@
 #include <array>
 #include <cstdint>
 
-typedef uint8_t u8;    ///<   8-bit unsigned integer.
-typedef int8_t i8;     ///<   8-bit signed integer.
-typedef uint16_t u16;  ///<  16-bit unsigned integer.
-typedef uint32_t u32;  ///<  32-bit unsigned integer.
-typedef uint64_t u64;  ///<  64-bit unsigned integer.
+using u8 =  uint8_t ;    ///<   8-bit unsigned integer.
+using i8 =   int8_t ;     ///<   8-bit signed integer.
+using u16 = uint16_t ;  ///<  16-bit unsigned integer.
+using u32 = uint32_t ;  ///<  32-bit unsigned integer.
+using u64 = uint64_t ;  ///<  64-bit unsigned integer.
 
 
 using column_t = u32;
