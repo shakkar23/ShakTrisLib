@@ -113,11 +113,11 @@ void Citrus() {
 
             std::vector<int64_t> lists;
             lists.reserve(count);
-            auto m = Shaktris::MoveGen::Smeared::god_movegen(b, queue[t]);
+            auto m = Shaktris::MoveGen::Smeared::nosrs_movegen(b, queue[t]);
 
             for (int i = 0; i < count; ++i) {
                 auto time_start = chrono::system_clock::now();
-                auto m = Shaktris::MoveGen::Smeared::god_movegen(b, queue[t]);
+                auto m = Shaktris::MoveGen::Smeared::nosrs_movegen(b, queue[t]);
                 auto time_stop = chrono::system_clock::now();
 
                 auto dt = chrono::duration_cast<chrono::nanoseconds>(time_stop - time_start).count();
