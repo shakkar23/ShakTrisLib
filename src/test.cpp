@@ -78,7 +78,7 @@ void Citrus() {
 
             std::vector<int64_t> lists;
             lists.reserve(count);
-            auto m = Shaktris::MoveGen::Smeared::god_movegen(b, queue[t]);
+            auto m = Shaktris::MoveGen::Smeared::nosrs_movegen(b, queue[t]);
 
             for (int i = 0; i < count; ++i) {
                 auto time_start = chrono::high_resolution_clock::now();

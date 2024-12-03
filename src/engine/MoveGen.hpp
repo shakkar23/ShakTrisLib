@@ -391,6 +391,10 @@ namespace Shaktris {
             struct SmearedBoard {
                 std::array<Board, 4> boards; // 0 => north, etc
 
+                inline bool operator==(const SmearedBoard& other) const {
+                    return boards == other.boards; // std::array's == compares all elements
+                }
+
                 bool convex(bool surface) const {
                     bool ret = false;
 
