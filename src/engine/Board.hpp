@@ -207,6 +207,36 @@ public:
         return convex;
     }
 
+    constexpr bool surface_convex() const {
+        Board shifted_board;
+
+        int garbage_height = get_garbage_height();
+
+        bool convex = true;
+
+        for (size_t i = 0; i < Board::width; ++i) {
+            shifted_board.board[i] = board[i] >> garbage_height;
+        }
+
+        for (size_t i = 0; i < Board::width; ++i) {
+            auto& col = shifted_board.board[i];
+            convex = convex & (std::popcount(col) == std::countr_one(col));
+        }
+
+        return convex;
+    }
+
+    constexpr bool true_convex() const {
+        bool convex = true;
+
+        for (size_t i = 0; i < Board::width; ++i) {
+            auto& col = board[i];
+            convex = convex & (std::popcount(col) == std::countr_one(col));
+        }
+
+        return convex;
+    }
+
     constexpr int get_garbage_height() const {
 
         int max_air = -1;
