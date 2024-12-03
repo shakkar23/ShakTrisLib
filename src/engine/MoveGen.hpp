@@ -420,6 +420,24 @@ namespace Shaktris {
                     return boards == other.boards; // std::array's == compares all elements
                 }
 
+                bool convex(bool surface) const {
+                    bool ret = false;
+
+                    if (surface) {
+                        for (const auto& board : boards) {
+                            ret |= !board.surface_convex();
+                        }
+                    }
+                    else {
+                        for (const auto& board : boards) {
+                            ret |= !board.true_convex();
+                        }
+                    }
+
+                    return !ret;
+                }
+
+
                 // shift both left and right
                 inline SmearedBoard shift() const {
                     SmearedBoard ret = *this;
@@ -829,6 +847,22 @@ namespace Shaktris {
 
                 SmearedBoard flood_old{};
                 SmearedBoard flood_new = convex_movegen(board, type);
+
+                bool convex = true;
+
+                for (auto& board : s_board.boards) {
+                    if (type == PieceType::O) {
+                        if (!board.surface_convex()) {
+                            convex = false;
+                        }
+                    } else if (!board.true_convex()) {
+                        convex = false;
+                    }
+                }
+
+                if (convex) {
+                    return moves_to_vec(flood_new, type);
+                }
 
                 while (flood_new != flood_old) {
                     flood_old = flood_new;
