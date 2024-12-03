@@ -475,7 +475,7 @@ namespace Shaktris {
                 }
 
                 // the this is the board
-                inline SmearedBoard rotate_srs(const SmearedBoard& pieces, PieceType type) const {
+                inline SmearedBoard rotate_no_srs(const SmearedBoard& pieces, PieceType type) const {
 
                     SmearedBoard ret{};
 
@@ -498,6 +498,10 @@ namespace Shaktris {
                     left_rotating_set.rotate_left();
                     right_rotating_set.rotate_right();
 
+                    ret |= left_rotating_set;
+                    ret |= right_rotating_set;
+                    
+                    return ret;
 
                     std::array<Coord, 4> rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
 
@@ -627,7 +631,7 @@ namespace Shaktris {
 
                         for (size_t x = 0; x < Board::width; x++) {
                             auto piece_col = piece.board[x];
-                            for (int n = 0; n < 10; n++) {
+                            for (int n = 0; n < 8; n++) {
                                 piece_col |= (piece_col >> 1) & ~board.board[x];
                             }
                             ret.boards[b_index].board[x] = piece_col;
@@ -821,6 +825,8 @@ namespace Shaktris {
             }
 
             inline std::vector<Piece> movegen(const Board& board, PieceType type) {
+                // movegen without srs
+
                 if (board.is_convex()) {
                     return moves_to_vec(convex_movegen(board, type), type);
                 }
@@ -828,9 +834,7 @@ namespace Shaktris {
                 const SmearedBoard s_board = smear(board, type);
 
                 SmearedBoard flood_old{};
-                SmearedBoard flood_new{};
-
-                flood_new.boards[0].board[4] = 1 << 19;
+                SmearedBoard flood_new = convex_movegen(board, type);
 
                 while (flood_new != flood_old) {
                     flood_old = flood_new;
@@ -842,11 +846,12 @@ namespace Shaktris {
                     flood_new |= flood_new.shift();
 
                     // rotate
-                    flood_new |= s_board.rotate_srs(flood_new, type);
+                    flood_new |= s_board.rotate_no_srs(flood_new, type);
 
                     // cull
                     s_board.non_collides(flood_new);
                 }
+
                 // version of grounded() that doesn't require collision checking
                 for (auto& board : flood_new.boards) {
                     for (size_t x = 0; x < Board::width; x++) {
