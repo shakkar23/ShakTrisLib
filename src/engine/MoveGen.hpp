@@ -388,15 +388,6 @@ namespace Shaktris {
 
         namespace Smeared {
 
-
-            inline column_t drop_first(column_t c) {
-                return c | (c - (c & -c));
-            }
-
-            inline column_t drop_last(column_t c) {
-                return c | (c & -c - 1);
-            }
-
             struct SmearedBoard {
                 std::array<Board, 4> boards; // 0 => north, etc
 
@@ -500,74 +491,112 @@ namespace Shaktris {
 
                     ret |= left_rotating_set;
                     ret |= right_rotating_set;
-                    
+
                     return ret;
+                }
 
-                    std::array<Coord, 4> rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
+                inline SmearedBoard rotate_srs(const SmearedBoard& pieces, PieceType type) const {
+                    SmearedBoard ret;
 
-                    // right srs
+                    const auto* offsets = &piece_offsets_JLSTZ;
+                    const auto* prev_offsets = &piece_offsets_JLSTZ;
+
+                    if (type == PieceType::I) {
+                        offsets = &piece_offsets_I;
+                        prev_offsets = &piece_offsets_I;
+                    }
+                    else if (type == PieceType::O) {
+                        offsets = &piece_offsets_O;
+                        prev_offsets = &piece_offsets_O;
+                    }
+
+                    SmearedBoard left_rotating_set = pieces;
+                    SmearedBoard right_rotating_set = pieces;
+
+                    // for every piece offset
                     for (size_t srs_i = 0; srs_i < srs_kicks; srs_i++) {
 
+                        std::array<Coord, 4> rot_offsets;
                         rot_offsets[0].x = (*prev_offsets)[3][srs_i].x - (*offsets)[0][srs_i].x;
                         rot_offsets[0].y = (*prev_offsets)[3][srs_i].y - (*offsets)[0][srs_i].y;
-                                                                                               
+
                         rot_offsets[1].x = (*prev_offsets)[0][srs_i].x - (*offsets)[1][srs_i].x;
                         rot_offsets[1].y = (*prev_offsets)[0][srs_i].y - (*offsets)[1][srs_i].y;
-                                                                                               
+
                         rot_offsets[2].x = (*prev_offsets)[1][srs_i].x - (*offsets)[2][srs_i].x;
                         rot_offsets[2].y = (*prev_offsets)[1][srs_i].y - (*offsets)[2][srs_i].y;
-                                                                                               
+
                         rot_offsets[3].x = (*prev_offsets)[2][srs_i].x - (*offsets)[3][srs_i].x;
                         rot_offsets[3].y = (*prev_offsets)[2][srs_i].y - (*offsets)[3][srs_i].y;
 
                         if (!right_rotating_set.empty()) {
-                            right_rotating_set.offset(rot_offsets);
+                            SmearedBoard tmp_set = right_rotating_set;
+                            tmp_set.rotate_right();
+                            tmp_set.offset(rot_offsets);
 
-                            ret |= right_rotating_set;
+                            // tmp after this line is which pieces did not collide after rotation
+                            this->non_collides(tmp_set);
 
-                            // get rid of pieces that didn't collide
-                            this->collides(right_rotating_set);
+                            ret |= tmp_set;
+
+                            // gotta rotate back to the original position
+                            for (auto& offsets : rot_offsets) {
+                                offsets.x *= -1;
+                                offsets.y *= -1;
+                            }
+
+                            // tmp after this line is which pieces did not collide in the board space
+                            tmp_set.offset(rot_offsets);
+                            tmp_set.rotate_left();
+
+                            // the ones that are still here are the ones we keep for the next iteration
+                            right_rotating_set ^= tmp_set;
                         }
-                        else {
-                            break;
-                        }
-                    }
 
-                    rot_offsets = { {{0, 0}, {0, 0}, {0, 0}, {0, 0}} };
-
-
-                    // left srs
-                    for (size_t srs_i = 0; srs_i < srs_kicks; srs_i++) {
-
+                        // use the rot_offsets for the other direction now
                         rot_offsets[0].x = (*prev_offsets)[1][srs_i].x - (*offsets)[0][srs_i].x;
                         rot_offsets[0].y = (*prev_offsets)[1][srs_i].y - (*offsets)[0][srs_i].y;
-                                                                                               
+
                         rot_offsets[1].x = (*prev_offsets)[2][srs_i].x - (*offsets)[1][srs_i].x;
                         rot_offsets[1].y = (*prev_offsets)[2][srs_i].y - (*offsets)[1][srs_i].y;
-                                                                                               
+
                         rot_offsets[2].x = (*prev_offsets)[3][srs_i].x - (*offsets)[2][srs_i].x;
                         rot_offsets[2].y = (*prev_offsets)[3][srs_i].y - (*offsets)[2][srs_i].y;
-                                                                                               
+
                         rot_offsets[3].x = (*prev_offsets)[0][srs_i].x - (*offsets)[3][srs_i].x;
                         rot_offsets[3].y = (*prev_offsets)[0][srs_i].y - (*offsets)[3][srs_i].y;
 
                         if (!left_rotating_set.empty()) {
-                            left_rotating_set.offset(rot_offsets);
+                            SmearedBoard tmp_set = left_rotating_set;
+                            tmp_set.rotate_left();
+                            tmp_set.offset(rot_offsets);
 
-                            ret |= left_rotating_set;
+                            // tmp after this line is which pieces did not collide after rotation
+                            this->non_collides(tmp_set);
 
-                            // get rid of pieces that didn't collide
-                            this->collides(left_rotating_set);
-                        }
-                        else {
-                            break;
+                            ret |= tmp_set;
+                            // figure out which pieces do not collide by bringing them back to the original position and check if they are in the rotating pieces
+
+                            for (auto& offsets : rot_offsets) {
+                                offsets.x *= -1;
+                                offsets.y *= -1;
+                            }
+
+                            // tmp after this line is which pieces did not collide in the board space
+                            tmp_set.offset(rot_offsets);
+                            tmp_set.rotate_right();
+
+                            // the ones that are still here are the ones we keep for the next iteration
+                            left_rotating_set ^= tmp_set;
                         }
                     }
 
-                    this->non_collides(ret);
-
+                    // add the remaining pieces that did not rotate :(
+                    ret |= left_rotating_set;
+                    ret |= right_rotating_set;
                     return ret;
                 }
+
 
                 inline void rotate_right() {
                     if (boards.empty()) return; // Handle empty array
