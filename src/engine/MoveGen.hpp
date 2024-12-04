@@ -738,11 +738,22 @@ namespace Shaktris {
 
             inline SmearedBoard smear(const Board& board, PieceType type) {
                 SmearedBoard ret{};
+                std::array<column_t, 14> thick_board;
+                // initialize the first and last two with ~0
+                thick_board[0] = ~0;
+                thick_board[1] = ~0;
+                thick_board[12] = ~0;
+                thick_board[13] = ~0;
+
+                // initialize the middle with the board
+                for (size_t i = 0; i < Board::width; i++) {
+                    thick_board[i + 2] = board.board[i];
+                }
 
                 for (size_t rot = 0; rot < 4; rot++) {
-                    for (const Coord& mino : rot_piece_def[rot][static_cast<size_t>(type)]) {
+                    for (const Coord& mino : rot_piece_def[static_cast<size_t>(type)][rot]) {
                         for (size_t x = 0; x < Board::width; x++) {
-                            auto c = ((x + mino.x) >= 0 && (x + mino.x) < board.board.size()) ? board.board[x + mino.x] : column_t(~0);
+                            column_t c = thick_board[2 + x + mino.x];
                             bool cond = (mino.y < 0);
                             c = ((!cond) * (c >> mino.y)) | (cond * ~(~c << -mino.y));
 
@@ -973,7 +984,7 @@ namespace Shaktris {
                     auto full_pieces = moves_to_vec(moves, type);
 
                     for(auto& piece : full_pieces) {
-                        open_nodes.push_back(SmearedPiece{piece.position, (u8)piece.rotation, 0});
+                        open_nodes.push_back(SmearedPiece{piece.position, (u8)piece.rotation});
                     }
                 } else {
                     open_nodes.push_back({Coord((i8)4, (i8)19), 0});
