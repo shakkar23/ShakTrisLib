@@ -208,47 +208,85 @@ void Citrus() {
 
     return;
 }
+void Shakkar() {
+    std::array<PieceType, 7> queue{
+        // IOTLJSZ
+        PieceType::I,
+        PieceType::O,
+        PieceType::T,
+        PieceType::L,
+        PieceType::J,
+        PieceType::S,
+        PieceType::Z};
+    auto func = [&](Board b) {
+        constexpr int count = 1'000'000;
+
+        // For each piece
+        for (i8 t = 0; t < 7; ++t) {
+            for (int i = 0; i < count; ++i) {
+                auto m = Shaktris::MoveGen::Smeared::god_movegen(b, queue[t]);
+                
+            }
+        }
+    };
+    Board board;
+    board.board[9] = 0b000011111111;
+    board.board[8] = 0b000011000000;
+    board.board[7] = 0b110011001100;
+    board.board[6] = 0b110011001100;
+    board.board[5] = 0b110011001100;
+    board.board[4] = 0b110011001100;
+    board.board[3] = 0b110011001100;
+    board.board[2] = 0b110000001100;
+    board.board[1] = 0b110000001100;
+    board.board[0] = 0b111111111100;
+
+    func(board);
+}
+
+void kise(){
+    constexpr int depth = 6;
+
+    std::array<PieceType, 7> queue{
+        // IOTLJSZ
+        PieceType::I,
+        PieceType::O,
+        PieceType::T,
+        PieceType::L,
+        PieceType::J,
+        PieceType::S,
+        PieceType::Z};
+
+    auto now = std::chrono::steady_clock::now();
+    Board board;
+    uint64_t nodes = perft(board, queue, depth);
+    auto end = std::chrono::steady_clock::now();
+
+    std::cout << "depth: " << depth << std::endl;
+    std::cout << "number of nodes: " << nodes << std::endl;
+    std::cout << "time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - now).count() / 1'000'000'000 << "s" << std::endl;
+
+    using namespace std::chrono;
+    // Example: Zero duration
+    auto duration = end - now;  // or: milliseconds{0}, seconds{0}, etc.
+
+    // Extract the components
+    auto minutes = duration_cast<std::chrono::minutes>(duration);
+    duration -= minutes;
+    auto seconds = duration_cast<std::chrono::seconds>(duration);
+    duration -= seconds;
+    auto milliseconds = duration_cast<std::chrono::milliseconds>(duration);
+
+    // Print the formatted duration
+    std::cout << std::setw(1) << minutes.count() << "m "
+              << std::setw(1) << seconds.count() << "s "
+              << std::setw(1) << milliseconds.count() << "ms" << std::endl;
+}
 
 int main() {
     Citrus();
     return 0;
-        constexpr int depth = 6;
-
-        std::array<PieceType, 7> queue{
-            // IOTLJSZ
-            PieceType::I,
-            PieceType::O,
-            PieceType::T,
-            PieceType::L,
-            PieceType::J,
-            PieceType::S,
-            PieceType::Z};
-
-        auto now = std::chrono::steady_clock::now();
-        Board board;
-        uint64_t nodes = perft(board, queue, depth);
-        auto end = std::chrono::steady_clock::now();
-
-        std::cout << "depth: " << depth << std::endl;
-        std::cout << "number of nodes: " << nodes << std::endl;
-        std::cout << "time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - now).count() / 1'000'000'000 << "s" << std::endl;
-
-        using namespace std::chrono;
-        // Example: Zero duration
-        auto duration = end - now;  // or: milliseconds{0}, seconds{0}, etc.
-
-        // Extract the components
-        auto minutes = duration_cast<std::chrono::minutes>(duration);
-        duration -= minutes;
-        auto seconds = duration_cast<std::chrono::seconds>(duration);
-        duration -= seconds;
-        auto milliseconds = duration_cast<std::chrono::milliseconds>(duration);
-
-        // Print the formatted duration
-        std::cout << std::setw(1) << minutes.count() << "m "
-                  << std::setw(1) << seconds.count() << "s "
-                  << std::setw(1) << milliseconds.count() << "ms" << std::endl;
-
+        
         /*
             Board board;
 
