@@ -95,7 +95,7 @@ constexpr std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N> p
 /// </summary>
 /// <returns>the rot_piece_def</returns>
 consteval auto generate_rot_piece_def() {
-    std::array<std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def{};
+    std::array<std::array<std::array<Coord, n_minos>, RotationDirection::RotationDirections_N>, (int)PieceType::PieceTypes_N> rot_piece_def{};
 
     for (size_t type = 0; type < piece_definitions.size(); ++type) {
         auto minos = piece_definitions[type];
@@ -103,7 +103,7 @@ consteval auto generate_rot_piece_def() {
         for (size_t rot = 0; rot < RotationDirection::RotationDirections_N; ++rot) {
             // set the minos
             for (size_t mino = 0; mino < n_minos; ++mino) {
-                rot_piece_def[rot][type][mino] = minos[mino];
+                rot_piece_def[type][rot][mino] = minos[mino];
             }
 
             // rotate them to the right
@@ -119,7 +119,7 @@ consteval auto generate_rot_piece_def() {
     return rot_piece_def;
 }
 
-// rot_piece_def[rot][type]
-constexpr std::array<std::array<std::array<Coord, n_minos>, (int)PieceType::PieceTypes_N>, RotationDirection::RotationDirections_N> rot_piece_def = generate_rot_piece_def();
+// rot_piece_def[type][rot]
+constexpr std::array<std::array<std::array<Coord, n_minos>, RotationDirection::RotationDirections_N>, (int)PieceType::PieceTypes_N> rot_piece_def = generate_rot_piece_def();
 
 constexpr i8 piece_spawn_height = 19;

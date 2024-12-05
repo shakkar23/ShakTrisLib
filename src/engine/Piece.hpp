@@ -17,21 +17,21 @@ public:
         this->type = type;
         rotation = dir;
         position = { 10 / 2 - 1, piece_spawn_height };
-        minos = rot_piece_def[static_cast<size_t>(dir)][static_cast<size_t>(type)];
+        minos = rot_piece_def[static_cast<size_t>(type)][static_cast<size_t>(dir)];
         spin = spinType::null;
     }
     constexpr Piece(PieceType type, RotationDirection dir, Coord pos) noexcept {
         this->type = type;
         rotation = dir;
         position = pos;
-        minos = rot_piece_def[static_cast<size_t>(dir)][static_cast<size_t>(type)];
+        minos = rot_piece_def[static_cast<size_t>(type)][static_cast<size_t>(dir)];
         spin = spinType::null;
     }
     constexpr Piece(PieceType type, RotationDirection dir, Coord pos, spinType spn) noexcept {
         this->type = type;
         rotation = dir;
         position = pos;
-        minos = rot_piece_def[static_cast<size_t>(dir)][static_cast<size_t>(type)];
+        minos = rot_piece_def[static_cast<size_t>(type)][static_cast<size_t>(dir)];
         spin = spn;
     }
 
@@ -51,11 +51,11 @@ public:
         else {
             rotation = static_cast<RotationDirection>((static_cast<int>(rotation) + 1) % n_minos);
 		}
-        minos = rot_piece_def[static_cast<size_t>(rotation)][static_cast<size_t>(type)];
+            minos = rot_piece_def[static_cast<size_t>(type)][static_cast<size_t>(rotation)];
 
-        return;
+            return;
 
-        calculate_rotate(direction);
+            calculate_rotate(direction);
     }
 
     constexpr inline void calculate_rotate(TurnDirection direction) {
