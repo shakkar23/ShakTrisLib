@@ -8,12 +8,21 @@
 #include <set>
 #include <unordered_set>
 #include <vector>
+#include <bitset>
+#include <bit>
+
+#include <cstring>
+#include <cassert>
 
 #include "Board.hpp"
 #include "Piece.hpp"
 #include "RotationSystems.hpp"
 #include "ShaktrisConstants.hpp"
 #include "Utility.hpp"
+#include <immintrin.h>
+
+#include <cstring>
+#include <cassert>
 
 // precomputed piece movements
 
@@ -286,7 +295,7 @@ namespace Shaktris {
                         initial_piece.type == PieceType::Z |
                         initial_piece.type == PieceType::S |
                         initial_piece.type == PieceType::O
-                    ) && r == 0)
+                        ) && r == 0)
                         break;
                 }
 
@@ -387,6 +396,10 @@ namespace Shaktris {
             struct SmearedBoard {
                 std::array<Board, 4> boards; // 0 => north, etc
 
+                inline bool operator==(const SmearedBoard& other) const {
+                    return boards == other.boards; // std::array's == compares all elements
+                }
+
                 bool convex(bool surface) const {
                     bool ret = false;
 
@@ -402,6 +415,9 @@ namespace Shaktris {
                     }
 
                     return !ret;
+                bool operator==(const SmearedBoard& other) const {
+                inline bool operator==(const SmearedBoard& other) const {
+                    return boards == other.boards; // std::array's == compares all elements
                 }
 
                 // shift both left and right
@@ -445,10 +461,49 @@ namespace Shaktris {
                             pieces.boards[b_index].board[x] = piece.board[x] & ~board.board[x];
                         }
                     }
+                }
 
+                inline void collides(SmearedBoard& pieces)const {
+
+                    for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
+                        const auto& board = boards[b_index];
+                        const auto& piece = pieces.boards[b_index];
+                        for (size_t x = 0; x < Board::width; x++) {
+                            pieces.boards[b_index].board[x] = piece.board[x] & board.board[x];
+                        }
+                    }
                 }
 
                 // the this is the board
+                inline SmearedBoard rotate_no_srs(const SmearedBoard& pieces, PieceType type) const {
+
+                    SmearedBoard ret{};
+
+                    const auto* offsets = &piece_offsets_JLSTZ;
+                    const auto* prev_offsets = &piece_offsets_JLSTZ;
+
+                    if (type == PieceType::I) {
+                        offsets = &piece_offsets_I;
+                        prev_offsets = &piece_offsets_I;
+                    }
+                    else if (type == PieceType::O) {
+                        return ret;
+                        offsets = &piece_offsets_O;
+                        prev_offsets = &piece_offsets_O;
+                    }
+
+                    SmearedBoard left_rotating_set = pieces;
+                    SmearedBoard right_rotating_set = pieces;
+
+                    left_rotating_set.rotate_left();
+                    right_rotating_set.rotate_right();
+
+                    ret |= left_rotating_set;
+                    ret |= right_rotating_set;
+
+                    return ret;
+                }
+
                 inline SmearedBoard rotate_srs(const SmearedBoard& pieces, PieceType type) const {
                     SmearedBoard ret;
 
@@ -551,50 +606,31 @@ namespace Shaktris {
                     return ret;
                 }
 
+
                 inline void rotate_right() {
+                    if (boards.empty()) return; // Handle empty array
                     Board tmp = boards[boards.size() - 1];
 
-                    for (size_t b_index = boards.size() - 1; b_index > 0; --b_index) {
-                        boards[b_index] = boards[b_index - 1];
-                    }
+                    // Shift elements right by 1 using std::memmove
+                    std::memmove(&boards[1], &boards[0], (boards.size() - 1) * sizeof(Board));
+
                     boards[0] = tmp;
                 }
 
                 inline void rotate_left() {
+                    if (boards.empty()) return; // Handle empty array
                     Board tmp = boards[0];
 
-                    for (size_t b_index = 0; b_index < boards.size() - 1; ++b_index) {
-                        boards[b_index] = boards[b_index + 1];
-                    }
+                    // Shift elements left by 1 using std::memmove
+                    std::memmove(&boards[0], &boards[1], (boards.size() - 1) * sizeof(Board));
+
                     boards[boards.size() - 1] = tmp;
                 }
 
                 inline void offset(const std::array<Coord, 4>& offsets) {
 
                     for (size_t rot = 0; rot < 4; ++rot) {
-                        i8 dx = offsets[rot].x;
-                        i8 dy = offsets[rot].y;
-                        Board& current_smear = this->boards[rot];
-                        Board tmp_board = boards[rot];
-
-                        // shift the board up or down depending on the mino location (-y)
-                        for (size_t i = 0; i < Board::width; ++i) {
-                            auto& tmp_col = tmp_board.board[i];
-                            auto real_col = boards[rot].board[i];
-                            if (dy > 0)
-                                real_col |= real_col << dy;
-                            else if (dy < 0)
-                                real_col |= real_col >> -dy;
-
-                            tmp_col |= real_col;
-                        }
-
-                        for (size_t x = 1; x < Board::width - 1; ++x) {
-                            auto& smear_col = current_smear.board[x];
-                            auto& tmp_col = tmp_board.board[x + dx];
-
-                            smear_col = tmp_col;
-                        }
+                        this->boards[rot].offset(offsets[rot]);
                     }
                 }
 
@@ -603,7 +639,7 @@ namespace Shaktris {
                     // pseudo code
                     // piece |= (piece >> 1) & ~column
 
-                    SmearedBoard ret;
+                    SmearedBoard ret{};
 
                     for (size_t b_index = 0; b_index < boards.size(); ++b_index) {
                         auto& board = this->boards[b_index];
@@ -611,7 +647,7 @@ namespace Shaktris {
 
                         for (size_t x = 0; x < Board::width; x++) {
                             auto piece_col = piece.board[x];
-                            for (int n = 0; n < 32; n++) {
+                            for (int n = 0; n < 1; n++) {
                                 piece_col |= (piece_col >> 1) & ~board.board[x];
                             }
                             ret.boards[b_index].board[x] = piece_col;
@@ -699,6 +735,13 @@ namespace Shaktris {
                 u8 rot;
                 u8 pad;
             };
+
+            inline void deduplicate(SmearedBoard& dedup, PieceType type) {
+                if (type == PieceType::Z || type == PieceType::S || type == PieceType::I) {
+                    dedup.boards[2].zero();
+                    dedup.boards[3].zero();
+                }
+            }
 
             inline std::vector<Piece> moves_to_vec(const SmearedBoard& moves, PieceType type) {
                 std::vector<Piece> ret;
@@ -793,15 +836,72 @@ namespace Shaktris {
                         break;
                     }
                     if ((
-                            type == PieceType::I |
-                            type == PieceType::Z |
-                            type == PieceType::S) &&
-                        b_index == 1) {
+                        type == PieceType::I |
+                        type == PieceType::Z |
+                        type == PieceType::S
+                        ) && b_index == 1) {
                         break;
                     }
                 }
 
                 return ret;
+            }
+
+            inline std::vector<Piece> nosrs_movegen(const Board& board, PieceType type) {
+                // movegen without srs
+
+                if (board.surface_convex()) {
+                    return moves_to_vec(convex_movegen(board, type), type);
+                }
+
+                const SmearedBoard s_board = smear(board, type);
+
+                SmearedBoard flood_old{};
+                SmearedBoard flood_new = convex_movegen(board, type);
+
+                bool convex = true;
+
+                for (auto& board : s_board.boards) {
+                    if (type == PieceType::O) {
+                        if (!board.surface_convex()) {
+                            convex = false;
+                        }
+                    } else if (!board.true_convex()) {
+                        convex = false;
+                    }
+                }
+
+                if (convex) {
+                    return moves_to_vec(flood_new, type);
+                }
+
+                while (flood_new != flood_old) {
+                    flood_old = flood_new;
+
+
+                    // left & right
+                    flood_new |= flood_new.shift();
+
+                    // rotate
+                    flood_new |= s_board.rotate_no_srs(flood_new, type);
+
+                    // down 
+                    flood_new |= s_board.smear_drop(flood_new);
+
+                    // cull
+                    s_board.non_collides(flood_new);
+                }
+
+                deduplicate(flood_new, type);
+
+                // version of grounded() that doesn't require collision checking
+                for (auto& board : flood_new.boards) {
+                    for (size_t x = 0; x < Board::width; x++) {
+                        // grounded pieces are last bits or bits followed by 0
+                        board.board[x] = (board.board[x] & ~(board.board[x] << 1)) | (board.board[x] & 1);
+                    }
+                }
+                return moves_to_vec(flood_new, type);
             }
 
             inline std::vector<Piece> movegen(const Board& board, PieceType type) {
@@ -851,6 +951,7 @@ namespace Shaktris {
 
                 return moves_to_vec(smeared_board.grounded(visited), type);
             }
+
 
             inline void srs(const SmearedBoard& s_board, SmearedPiece& p, PieceType type, TurnDirection dir) {
                 const auto* offsets = &piece_offsets_JLSTZ;
@@ -1045,6 +1146,7 @@ namespace Shaktris {
                         // if is grounded push to ret
                         {
                             auto& col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
+
                             if ((piece.position.y == 0) || (col & (1 << (piece.position.y - 1)))) {
                                 Piece p = Piece(type, (RotationDirection)piece.rot, piece.position, spinType::null);
                                 u32 forward_hash = 0;
@@ -1078,6 +1180,11 @@ namespace Shaktris {
                     std::swap(open_nodes, next_nodes);
                     next_nodes.clear();
                 }
+
+                // go through all pieces and check if they are grounded
+
+                // check which pieces are immobile all spin
+
 
                 return ret;
             }

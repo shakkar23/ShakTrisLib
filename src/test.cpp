@@ -51,42 +51,7 @@ void print_board(const Board& board) {
         }
         std::cout << std::endl;
     }
-}
-
-using Nodes = int64_t;
-
-template <std::size_t N>
-static Nodes perft(Board board, const Piece& move, const std::array<PieceType, N>& queue, int i, int depth) {
-    using namespace Shaktris::MoveGen::Smeared;
-
-    if (depth <= 1){
-        return god_movegen(board, queue[i]).size();
-    }
-
-    Nodes nodes = 0;
-
-    board.set(move);
-    board.clearLines();
-    for (auto& move : god_movegen(board, queue[i]))
-        nodes += perft(board, move, queue, i + 1, depth - 1);
-
-    return nodes;
-}
-
-template <std::size_t N>
-static Nodes perft(Board& board, const std::array<PieceType, N>& queue, int depth) {
-    using namespace Shaktris::MoveGen::Smeared;
-
-    if (depth <= 1)
-        return god_movegen(board, queue[0]).size();
-
-    Nodes nodes = 0;
-
-    for (auto& move : god_movegen(board, queue[0]))
-        nodes += perft(board, move, queue, 1, depth - 1);
-
-    return nodes;
-}
+};
 
 void Citrus() {
     std::array<PieceType, 7> queue{
@@ -113,12 +78,12 @@ void Citrus() {
 
             std::vector<int64_t> lists;
             lists.reserve(count);
-            auto m = Shaktris::MoveGen::Smeared::god_movegen(b, queue[t]);
+            auto m = Shaktris::MoveGen::Smeared::nosrs_movegen(b, queue[t]);
 
             for (int i = 0; i < count; ++i) {
-                auto time_start = chrono::system_clock::now();
-                auto m = Shaktris::MoveGen::Smeared::god_movegen(b, queue[t]);
-                auto time_stop = chrono::system_clock::now();
+                auto time_start = chrono::high_resolution_clock::now();
+                auto m = Shaktris::MoveGen::Smeared::movegen(b, queue[t]);
+                auto time_stop = chrono::high_resolution_clock::now();
 
                 auto dt = chrono::duration_cast<chrono::nanoseconds>(time_stop - time_start).count();
 
@@ -259,23 +224,17 @@ void kise(){
 
     auto now = std::chrono::steady_clock::now();
     Board board;
-    uint64_t nodes = perft(board, queue, depth);
-    auto end = std::chrono::steady_clock::now();
 
-    std::cout << "depth: " << depth << std::endl;
-    std::cout << "number of nodes: " << nodes << std::endl;
-    std::cout << "time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - now).count() / 1'000'000'000 << "s" << std::endl;
+    auto func = [&](Board b) {
+        const int count = 1000000;
 
-    using namespace std::chrono;
-    // Example: Zero duration
-    auto duration = end - now;  // or: milliseconds{0}, seconds{0}, etc.
+        // For each piece
+        for (i8 t = 0; t < 7; ++t) {
+            int64_t time = 0;
+            int64_t c = 0;
 
-    // Extract the components
-    auto minutes = duration_cast<std::chrono::minutes>(duration);
-    duration -= minutes;
-    auto seconds = duration_cast<std::chrono::seconds>(duration);
-    duration -= seconds;
-    auto milliseconds = duration_cast<std::chrono::milliseconds>(duration);
+            std::vector<int64_t> lists;
+            lists.reserve(1000000);
 
     // Print the formatted duration
     std::cout << std::setw(1) << minutes.count() << "m "
