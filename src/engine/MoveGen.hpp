@@ -8,6 +8,11 @@
 #include <set>
 #include <unordered_set>
 #include <vector>
+#include <bitset>
+#include <bit>
+
+#include <cstring>
+#include <cassert>
 
 #include "Board.hpp"
 #include "Piece.hpp"
@@ -845,7 +850,7 @@ namespace Shaktris {
             inline std::vector<Piece> nosrs_movegen(const Board& board, PieceType type) {
                 // movegen without srs
 
-                if (board.is_convex()) {
+                if (board.surface_convex()) {
                     return moves_to_vec(convex_movegen(board, type), type);
                 }
 
@@ -1141,6 +1146,7 @@ namespace Shaktris {
                         // if is grounded push to ret
                         {
                             auto& col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
+
                             if ((piece.position.y == 0) || (col & (1 << (piece.position.y - 1)))) {
                                 Piece p = Piece(type, (RotationDirection)piece.rot, piece.position, spinType::null);
                                 u32 forward_hash = 0;
