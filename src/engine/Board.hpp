@@ -188,19 +188,19 @@ public:
     }
 
     constexpr bool surface_convex() const {
-        Board shifted_board;
+        auto shifted_board = board;
 
         int garbage_height = get_garbage_height();
 
         bool convex = true;
 
         for (size_t i = 0; i < Board::width; ++i) {
-            shifted_board.board[i] = board[i] >> garbage_height;
+            shifted_board[i] >>= garbage_height;
         }
 
         for (size_t i = 0; i < Board::width; ++i) {
-            auto& col = shifted_board.board[i];
-            convex = convex & (std::popcount(col) == std::countr_one(col));
+            auto col = shifted_board[i];
+            convex &= std::has_single_bit(col+1);
         }
 
         return convex;

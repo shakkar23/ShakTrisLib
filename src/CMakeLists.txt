@@ -31,7 +31,8 @@ set( SHAKTRIS_HEADERS
 if(NOT MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 else()
-	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX2")
+# add /profile for MSVC
+	set(CMAKE_EXE_LINKER_FLAGS_CXX "${CMAKE_EXE_LINKER_FLAGS_CXX} /PROFILE")
 endif()
 
 # Add source to this project's executable.
@@ -41,10 +42,10 @@ target_include_directories(ShakTris PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(ShakTris PROPERTIES PUBLIC_HEADER "${SHAKTRIS_HEADERS}")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET ShakTris PROPERTY CXX_STANDARD 20)
+  set_property(TARGET ShakTris PROPERTY CXX_STANDARD 23)
 endif()
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 add_executable(ShakTrisTest "test.cpp")
 
 target_link_libraries(ShakTrisTest ShakTris)

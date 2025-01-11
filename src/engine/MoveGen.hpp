@@ -292,9 +292,9 @@ namespace Shaktris {
                     if (initial_piece.type == PieceType::O && r == 0)
                         break;
                     if ((
-                        initial_piece.type == PieceType::Z |
-                        initial_piece.type == PieceType::S |
-                        initial_piece.type == PieceType::O
+                        (initial_piece.type == PieceType::Z) ||
+                        (initial_piece.type == PieceType::S) ||
+                        (initial_piece.type == PieceType::O)
                         ) && r == 0)
                         break;
                 }
@@ -729,7 +729,6 @@ namespace Shaktris {
             struct SmearedPiece {
                 Coord position;
                 u8 rot;
-                u8 pad;
             };
 
             inline void deduplicate(SmearedBoard& dedup, PieceType type) {
@@ -832,8 +831,8 @@ namespace Shaktris {
                         break;
                     }
                     if ((
-                        type == PieceType::I |
-                        type == PieceType::Z |
+                        type == PieceType::I ||
+                        type == PieceType::Z ||
                         type == PieceType::S
                         ) && b_index == 1) {
                         break;
@@ -992,7 +991,7 @@ namespace Shaktris {
             inline std::vector<Piece> god_movegen(const Board& board, const PieceType type) {
                 std::vector<Piece> ret;
                 ret.reserve(150);
-                if (board.surface_convex() & board.is_low()) {
+                if (board.surface_convex() && board.is_low()) {
                     ret = moves_to_vec(convex_movegen(board, type), type);
                     return ret;
                 }
@@ -1002,7 +1001,7 @@ namespace Shaktris {
                 std::vector<SmearedPiece> next_nodes;
                 next_nodes.reserve(150);
                 std::bitset<32 * 10 * 4> visited;
-                std::set<u32> hashes;
+                std::vector<u32> hashes;
                 auto is_immobile = [](const SmearedBoard& board, const SmearedPiece& piece) {
                     bool left = false;
                     bool right = false;
@@ -1051,8 +1050,8 @@ namespace Shaktris {
                             break;
                         }
                         if ((
-                                type == PieceType::I |
-                                type == PieceType::Z |
+                                type == PieceType::I ||
+                                type == PieceType::Z ||
                                 type == PieceType::S) &&
                             i == 1) {
                             break;
@@ -1071,8 +1070,8 @@ namespace Shaktris {
                             break;
                         }
                         if ((
-                                type == PieceType::I |
-                                type == PieceType::Z |
+                                type == PieceType::I ||
+                                type == PieceType::Z ||
                                 type == PieceType::S) &&
                             rot == 1) {
                             break;
@@ -1087,9 +1086,9 @@ namespace Shaktris {
                     open_nodes.push_back({Coord((i8)4, (i8)19), 0});
                 }
 
-                while (!open_nodes.empty()) {
-                    for (const auto& piece : open_nodes) {
-                        auto to_iter = [&](auto x, auto y, auto r) {
+                while (true) {
+                    for (const auto &piece : open_nodes) {
+                        auto to_iter = [](auto x, auto y, auto r) {
                             return y + x * 32 + r * 32 * 10;
                         };
                         size_t iter = to_iter(piece.position.x, piece.position.y, piece.rot);
@@ -1162,9 +1161,9 @@ namespace Shaktris {
                                 }
 
                                 forward_hash = std::min(forward_hash, backwards_hash);
-
-                                if (!hashes.contains(forward_hash)) {
-                                    hashes.insert(forward_hash);
+                                // does not contain
+                                if (!std::ranges::contains(hashes,forward_hash)) {
+                                    hashes.emplace_back(forward_hash);
                                     bool is_immobile_piece = is_immobile(s_board, piece);
                                     if (is_immobile_piece)
                                         p.spin = spinType::normal;
@@ -1175,6 +1174,9 @@ namespace Shaktris {
                     }
                     std::swap(open_nodes, next_nodes);
                     next_nodes.clear();
+
+					if (open_nodes.empty())
+						break;
                 }
 
                 // go through all pieces and check if they are grounded
