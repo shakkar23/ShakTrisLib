@@ -396,7 +396,7 @@ namespace Shaktris {
             struct SmearedBoard {
                 std::array<Board, 4> boards; // 0 => north, etc
 
-                bool convex(bool surface) const {
+                inline bool convex(bool surface) const {
                     bool ret = false;
 
                     if (surface) {
@@ -947,8 +947,8 @@ namespace Shaktris {
                 return moves_to_vec(smeared_board.grounded(visited), type);
             }
 
-
-            inline void srs(const SmearedBoard& s_board, SmearedPiece& p, PieceType type, TurnDirection dir) {
+            template <TurnDirection dir>
+            inline void srs(const SmearedBoard& s_board, SmearedPiece& p, PieceType type) {
                 const auto* offsets = &piece_offsets_JLSTZ;
                 const auto* prev_offsets = &piece_offsets_JLSTZ;
 
@@ -962,12 +962,13 @@ namespace Shaktris {
                 }
 
                 u8 new_rot{};
-                if (dir == TurnDirection::Right) {
+                if constexpr (dir == TurnDirection::Right) {
                     new_rot = (p.rot + 1) % 4;
                 } else {
                     new_rot = (p.rot + 3) % 4;
                 }
 
+                std::array<bool, srs_kicks> worked{};
                 for (size_t i = 0; i < srs_kicks; ++i) {
                     const Coord offset = Coord(
                         (i8)(*prev_offsets)[p.rot][i].x - (i8)(*offsets)[static_cast<size_t>(new_rot)][i].x,
@@ -981,11 +982,26 @@ namespace Shaktris {
                     if (tmp.position.x >= 0 && tmp.position.x < Board::width && tmp.position.y >= 0) {
                         auto& col = s_board.boards[static_cast<size_t>(new_rot)].board[static_cast<size_t>(tmp.position.x)];
                         if (!(col & (column_t(1) << tmp.position.y))) {
-                            p = tmp;
-                            return;
+							worked[i] = true;
                         }
                     }
                 }
+                SmearedPiece ret = p;
+
+				// return the piece corresponding with the first successful srs
+                for (int i = srs_kicks - 1; i >= 0; --i) {
+                    if (worked[i]) {
+                        const Coord offset = Coord(
+                            (i8)(*prev_offsets)[p.rot][i].x - (i8)(*offsets)[static_cast<size_t>(new_rot)][i].x,
+                            (i8)(*prev_offsets)[p.rot][i].y - (i8)(*offsets)[static_cast<size_t>(new_rot)][i].y);
+
+                        SmearedPiece ret = p;
+                        ret.position.x += offset.x;
+                        ret.position.y += offset.y;
+                        ret.rot = new_rot;
+                    }
+                }
+                p = ret;
             }
 
             inline std::vector<Piece> god_movegen(const Board& board, const PieceType type) {
@@ -1001,7 +1017,7 @@ namespace Shaktris {
                 std::vector<SmearedPiece> next_nodes;
                 next_nodes.reserve(150);
                 std::bitset<32 * 10 * 4> visited;
-                std::vector<u32> hashes;
+                std::bitset<32 * 10 * 4> returned;
                 auto is_immobile = [](const SmearedBoard& board, const SmearedPiece& piece) {
                     bool left = false;
                     bool right = false;
@@ -1041,6 +1057,65 @@ namespace Shaktris {
 
                     return left & right & down & up;
                 };
+                // thanks Citrus for this piece of code!
+                // https://github.com/citrus610/tetris-movegen/blob/bd6ff34145c8898a6365bdc603706e7f318430e5/src/piece.cpp#L25
+                auto cannonicalize = [](const SmearedPiece& piece, PieceType type) {
+					SmearedPiece ret = piece;
+                    switch (type) {
+                    case PieceType::I:
+                        switch (piece.rot) {
+                        case 0:
+                            break;
+                        case 1:
+                            break;
+                        case 2:
+                            ret.rot = 0;
+                            ret.position.x--;
+                            break;
+                        case 3:
+                            ret.rot = 1;
+                            ret.position.y++;
+                            break;
+                        }
+                        break;
+					case PieceType::S:
+						switch (piece.rot) {
+						case 0:
+							break;
+						case 1:
+							break;
+						case 2:
+                            ret.rot = 0;
+                            ret.position.y--;
+							break;
+						case 3:
+                            ret.position.x++;
+                            ret.rot = 1;
+							break;
+						}
+						break;
+					case PieceType::Z:
+						switch (piece.rot) {
+						case 0:
+							break;
+						case 1:
+							break;
+						case 2:
+							ret.rot = 0;
+							ret.position.y--;
+							break;
+						case 3:
+							ret.position.x--;
+							ret.rot = 1;
+							break;
+						}
+						break;
+					default:
+						break;
+                    }
+
+					return ret;
+			    };
 
                 if (s_board.convex(PieceType::O == type)) {
                     SmearedBoard moves{};
@@ -1062,7 +1137,7 @@ namespace Shaktris {
                     return ret;
                 } else if (board.is_low()) {
                     SmearedBoard moves{};
-                    for (u8 rot = 0; rot < 4; ++rot) {
+                    for (int rot = 0; rot < 4; ++rot) {
 
                         moves.boards[rot] = partial_convex_movegen(s_board.boards[rot], type);
 
@@ -1100,16 +1175,21 @@ namespace Shaktris {
                         // shift left
                         if (piece.position.x > 0) {
                             const auto col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x - 1)];
-                            if (!(col & (1 << piece.position.y)))
-                                next_nodes.push_back({Coord(piece.position.x - 1, piece.position.y), piece.rot});
+                            SmearedPiece new_piece = { Coord(piece.position.x - 1, piece.position.y), piece.rot };
+                            if (!(col & (1 << piece.position.y)) &&
+                                !visited[to_iter(new_piece.position.x, new_piece.position.y, piece.rot)])
+                                    next_nodes.push_back(new_piece);
                         }
 
                         // shift right
                         if (piece.position.x < Board::width - 1) {
                             const auto col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x + 1)];
-                            if (!(col & (1 << piece.position.y))) {
-                                next_nodes.push_back({Coord(piece.position.x + 1, piece.position.y), piece.rot});
-                            }
+                            SmearedPiece new_piece = { Coord(piece.position.x + 1, piece.position.y), piece.rot };
+							// if its not colliding with the board
+							// if its not in the visited set push it to the next nodes
+                            if (!(col & (1 << piece.position.y)) && 
+                                !visited[to_iter(new_piece.position.x, new_piece.position.y, piece.rot)])
+                                    next_nodes.push_back(new_piece);
                         }
 
                         // sonic drop
@@ -1118,22 +1198,24 @@ namespace Shaktris {
                             // mask out every bit that is above the current y position
                             col &= (1 << piece.position.y) - 1;
 
-                            const auto height = ((int)sizeof(column_t) * CHAR_BIT) - std::countl_zero(col);
+                            const auto height = ((int)sizeof(column_t) * 8) - std::countl_zero(col);
                             // const auto height = std::clamp(piece.position.y - 1,0,32);
-                            next_nodes.push_back({Coord(piece.position.x, height), piece.rot});
+                            SmearedPiece new_piece = { Coord(piece.position.x, height), piece.rot };
+							if (!visited[to_iter(new_piece.position.x, new_piece.position.y, piece.rot)])
+								next_nodes.push_back(new_piece);
                         }
 
                         // rotate srs
                         if (type != PieceType::O) {
                             SmearedPiece next_piece = piece;
 
-                            srs(s_board, next_piece, type, TurnDirection::Right);
+                            srs<TurnDirection::Right>(s_board, next_piece, type);
 
                             next_nodes.push_back({next_piece});
 
                             next_piece = piece;
 
-                            srs(s_board, next_piece, type, TurnDirection::Left);
+                            srs<TurnDirection::Left>(s_board, next_piece, type);
 
                             next_nodes.push_back({next_piece});
                         }
@@ -1143,28 +1225,14 @@ namespace Shaktris {
                             auto& col = s_board.boards[static_cast<size_t>(piece.rot)].board[static_cast<size_t>(piece.position.x)];
 
                             if ((piece.position.y == 0) || (col & (1 << (piece.position.y - 1)))) {
-                                Piece p = Piece(type, (RotationDirection)piece.rot, piece.position, spinType::null);
-                                u32 forward_hash = 0;
-                                for (const auto& mino : p.minos) {
-                                    forward_hash += p.position.x + mino.x;
-                                    forward_hash *= 32;
-                                    forward_hash += p.position.y + mino.y;
-                                    forward_hash *= 10;
-                                }
+								SmearedPiece new_piece = cannonicalize(piece, type);
+                                Piece p = Piece(type, (RotationDirection)new_piece.rot, new_piece.position, spinType::null);
 
-                                u32 backwards_hash = 0;
-                                for (const auto& mino : std::views::reverse(p.minos)) {
-                                    backwards_hash += p.position.x + mino.x;
-                                    backwards_hash *= 32;
-                                    backwards_hash += p.position.y + mino.y;
-                                    backwards_hash *= 10;
-                                }
-
-                                forward_hash = std::min(forward_hash, backwards_hash);
+								auto iter = to_iter(new_piece.position.x, new_piece.position.y, new_piece.rot);
                                 // does not contain
-                                if (!std::ranges::contains(hashes,forward_hash)) {
-                                    hashes.emplace_back(forward_hash);
-                                    bool is_immobile_piece = is_immobile(s_board, piece);
+                                if (!returned[iter]) {
+									returned[iter] = true;
+                                    bool is_immobile_piece =  is_immobile(s_board, piece);
                                     if (is_immobile_piece)
                                         p.spin = spinType::normal;
                                     ret.push_back(p);

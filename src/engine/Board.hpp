@@ -210,8 +210,8 @@ public:
         bool convex = true;
 
         for (size_t i = 0; i < Board::width; ++i) {
-            auto& col = board[i];
-            convex = convex & (std::popcount(col) == std::countr_one(col));
+            auto col = board[i];
+            convex &= (std::popcount(col) == std::countr_one(col));
         }
 
         return convex;
