@@ -104,46 +104,29 @@ void Citrus() {
     Board board;
 
     auto func = [&](Board b) {
-        constexpr int count = 1'000'000;
+        constexpr size_t count = 1'000'000;
 
         // For each piece
         for (i8 t = 0; t < 7; ++t) {
             int64_t time = 0;
             int64_t c = 0;
 
-            std::vector<int64_t> lists;
-            lists.reserve(count);
-
-            for (int i = 0; i < count; ++i) {
-                auto time_start = chrono::system_clock::now();
-                auto m = Shaktris::MoveGen::Smeared::god_movegen(b, queue[t]);
-                auto time_stop = chrono::system_clock::now();
-
-                auto dt = chrono::duration_cast<chrono::nanoseconds>(time_stop - time_start).count();
-
+            auto time_start = chrono::system_clock::now();
+            for (size_t i = 0; i < count; ++i) {
+                auto m = Shaktris::MoveGen::Smeared::god_movegen(b, PieceType::O);
                 c += m.size();
-                time += dt;
-                lists.push_back(dt);
             }
+            auto time_stop = chrono::system_clock::now();
+
+            time = chrono::duration_cast<chrono::nanoseconds>(time_stop - time_start).count();
 
             // Calculate mean time & movegen count
             time = time / count;
             c = c / count;
 
-            // Calculate stdev
-            uint64_t max = std::max_element(lists.begin(), lists.end())[0];
-            uint64_t min = std::min_element(lists.begin(), lists.end())[0];
-            uint64_t sd = 0;
-
-            for (auto dt : lists) {
-                sd += (dt - time) * (dt - time);
-            }
-
-            sd = sd / count;
-
-            cout << "\tpiece: " << to_char(queue[t]) << "\ttime: " << time << " ns" << "\tstdev: " << std::sqrt(sd) << "\tmin: " << min << " ns" << "\tmax: " << max << " ns" << "\tcount: " << c << endl;
+            cout << "\tpiece: " << to_char(queue[t]) << "\ttime: " << time << " ns" << "\tcount: " << c << endl;
         }
-        };
+    };
 
     board.board[9] = 0b00111111;
     board.board[8] = 0b00111111;
@@ -175,7 +158,10 @@ void Citrus() {
     //          << endl;*/
     // }
     // return;
-    func(board);
+    
+    
+    
+    //func(board);
 
     board.board[9] = 0b111111111;
     board.board[8] = 0b111111111;
@@ -189,7 +175,7 @@ void Citrus() {
     board.board[0] = 0b011111111;
 
     cout << "BOARD DT CANNON" << endl;
-    func(board);
+    //func(board);
 
     board.board[9] = 0b000011111111;
     board.board[8] = 0b000011000000;
@@ -218,7 +204,7 @@ void Shakkar() {
         PieceType::S,
         PieceType::Z };
     auto func = [&](Board b) {
-        constexpr int count = 1'000'000;
+        constexpr int count = 1'000;
 
         // For each piece
         for (i8 t = 0; t < 7; ++t) {
@@ -227,7 +213,7 @@ void Shakkar() {
 
             }
         }
-        };
+    };
     Board board;
     board.board[9] = 0b000011111111;
     board.board[8] = 0b000011000000;
