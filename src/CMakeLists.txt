@@ -29,7 +29,9 @@ set( SHAKTRIS_HEADERS
 
 )
 if(NOT MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+	if(NOT DEFINED EMSCRIPTEN)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+	endif()
 else()
 # add /profile for MSVC
 	set(CMAKE_EXE_LINKER_FLAGS_CXX "${CMAKE_EXE_LINKER_FLAGS_CXX} /PROFILE")
